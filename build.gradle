@@ -31,11 +31,14 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     implementation("io.micronaut:micronaut-validation")
-    implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator")
+    implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator:3.0.0")
+    implementation("org.hibernate:hibernate-validator:6.1.6.Final")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.1.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.0")
+
 }
 
 

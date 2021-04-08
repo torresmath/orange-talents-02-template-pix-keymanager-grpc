@@ -20,8 +20,10 @@ class GenerateKeyGrpcServer(
 
         val error = requestValidator.validate(request)
 
-        if (error != null)
+        if (error != null) {
             responseObserver?.onError(io.grpc.protobuf.StatusProto.toStatusRuntimeException(error))
+            return
+        }
 
         val retrieveCustomer = itauClient.runCatching { retrieveCustomer(request.clientId) }
 

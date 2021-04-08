@@ -1,6 +1,6 @@
 package br.com.torresmath.key.manager
 
-import br.com.torresmath.key.manager.generateKey.toModel
+import br.com.torresmath.key.manager.generateKey.toValidationModel
 import com.google.protobuf.Any
 import com.google.rpc.Code
 import com.google.rpc.Status
@@ -18,15 +18,19 @@ class RequestConstraintValidator {
     private val logger = LoggerFactory.getLogger(RequestConstraintValidator::class.java)
 
     fun validate(request: KeyRequest): Status? {
-        val validation = validator.validate(request.toModel())
+        val requestModel = request.toValidationModel()
 
-        if (validation.isEmpty()) {
+        val validation = validator.validate(requestModel)
+
+        val validIdentifier = requestModel.isValidIdentifier(validator)
+
+        if (validation.isEmpty() && validIdentifier) {
             logger.info("Valid Request: $request")
             return null
         }
 
         val errors = validation.map {
-            logger.info("E: ${it.message}")
+            logger.info("Request Error:  ${it.message}")
             ErrorDetail.newBuilder()
                 .setMessage(it.message)
                 .setCode(404)
@@ -35,15 +39,21 @@ class RequestConstraintValidator {
 
         val errorDetails = ErrorDetails.newBuilder()
             .addAllDetails(errors)
-            .build()
+
+        if (!validIdentifier) {
+            errorDetails.addDetails(
+                ErrorDetail.newBuilder()
+                    .setMessage("Invalid key identifier: ${requestModel.keyIdentifier} - Given Key Type: ${requestModel.keyType}")
+                    .setCode(404)
+                    .build()
+            )
+        }
 
         return Status.newBuilder()
             .setCode(Code.INVALID_ARGUMENT.number)
-            .setMessage("Bad request")
+            .setMessage(errorDetails.getDetails(0).message)
             .addDetails(
-                Any.pack(
-                    errorDetails
-                )
+                Any.pack(errorDetails.build())
             ).build()
     }
 }
