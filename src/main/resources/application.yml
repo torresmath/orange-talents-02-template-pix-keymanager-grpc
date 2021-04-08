@@ -1,3 +1,12 @@
 micronaut:
   application:
     name: keyManagerGrpc
+  http:
+    services:
+      erp-itau:
+        urls:
+          - http://localhost:9091
+        read-timeout: 5s
+        pool:
+          enabled: true
+          max-connections: 50

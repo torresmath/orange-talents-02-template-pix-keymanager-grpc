@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.torresmath.key.manager";
+option java_outer_classname = "GenerateKeyGrpc";
+option objc_class_prefix = "HLW";
+
+package br.com.torresmath.key.manager;
+
+service GenerateKeyGrpcService {
+  rpc generateKey (KeyRequest) returns (KeyResponse) {}
+}
+
+message KeyRequest {
+  string clientId = 1;
+  KeyType keyType = 2;
+  string keyIdentifier = 3;
+  AccountType accountType = 4;
+}
+
+message KeyResponse {
+
+}
+
+enum KeyType {
+  CPF = 0;
+  MOBILE_NUMBER = 1;
+  EMAIL = 2;
+  RANDOM = 3;
+}
+
+enum AccountType {
+  CHECKING_ACCOUNT = 0;
+  SAVINGS_ACCOUNT = 1;
+}
+
+message ErrorDetail {
+  int32 code = 1;
+  string message = 2;
+}
+
+message ErrorDetails {
+  repeated ErrorDetail details = 1;
+}
