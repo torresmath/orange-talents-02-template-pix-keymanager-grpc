@@ -1,24 +1,22 @@
 package br.com.torresmath.key.manager.generateKey
 
 import br.com.torresmath.key.manager.AccountType
-import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
+import br.com.torresmath.key.manager.annotations.ValidKeyIdentifierValidator
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import io.micronaut.validation.validator.Validator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.mockito.Mockito
 import javax.inject.Inject
+import javax.validation.ConstraintValidatorContext
 
 @MicronautTest
-internal class PixKeyTest {
+internal class ValidKeyIdentifierValidatorTest(@Inject val validator: ValidKeyIdentifierValidator) {
 
-    @Inject
-    lateinit var validator: Validator
 
     companion object {
-
         @JvmStatic
         fun mobileParams() = listOf(
             Arguments.of("+55972651418", true),
@@ -33,8 +31,9 @@ internal class PixKeyTest {
 
         @JvmStatic
         fun randomParams() = listOf(
-            Arguments.of("", true),
+            Arguments.of("22ccc326-995f-11eb-a8b3-0242ac130003", true),
             Arguments.of("value", false),
+            Arguments.of("", false),
         )
 
         @JvmStatic
@@ -57,33 +56,44 @@ internal class PixKeyTest {
     @MethodSource("mobileParams")
     fun `Valid key identifiers for Key Type == Mobiler Number`(identifier: String, expected: Boolean) {
 
-        val keyRequestModel = PixKey("", KeyType.MOBILE_NUMBER, identifier, AccountType.CHECKING_ACCOUNT)
-        assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
+        val mock = Mockito.mock(ConstraintValidatorContext::class.java)
+
+        val pix = PixKey("", KeyType.MOBILE_NUMBER, identifier, AccountType.CHECKING_ACCOUNT)
+        assertEquals(expected, validator.isValid(pix, mock))
     }
 
     @ParameterizedTest
     @MethodSource("randomParams")
     fun `Valid key identifiers for Type == RANDOM`(identifier: String, expected: Boolean) {
-        val keyRequestModel = PixKey("", KeyType.RANDOM, identifier, AccountType.CHECKING_ACCOUNT)
-        assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
+
+        val mock = Mockito.mock(ConstraintValidatorContext::class.java)
+
+        val pix = PixKey("", KeyType.RANDOM, identifier, AccountType.CHECKING_ACCOUNT)
+        assertEquals(expected, validator.isValid(pix, mock))
     }
 
     @ParameterizedTest
     @MethodSource("cpfParams")
     fun `Valid key identifiers for Type == CPF`(identifier: String, expected: Boolean) {
-        val keyRequestModel = PixKey("", KeyType.CPF, identifier, AccountType.CHECKING_ACCOUNT)
-        assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
+
+        val mock = Mockito.mock(ConstraintValidatorContext::class.java)
+
+        val pix = PixKey("", KeyType.CPF, identifier, AccountType.CHECKING_ACCOUNT)
+        assertEquals(expected, validator.isValid(pix, mock))
     }
 
     @ParameterizedTest
     @MethodSource("emailParams")
     fun `Valid key identifiers for Type == Email`(identifier: String, expected: Boolean) {
-        val keyRequestModel = PixKey(
+
+        val mock = Mockito.mock(ConstraintValidatorContext::class.java)
+
+        val pix = PixKey(
             clientId = "",
             keyType = KeyType.EMAIL,
             keyIdentifier = identifier,
             accountType = AccountType.CHECKING_ACCOUNT
         )
-        assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
+        assertEquals(expected, validator.isValid(pix, mock))
     }
 }

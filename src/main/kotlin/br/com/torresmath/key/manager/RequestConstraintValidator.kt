@@ -1,13 +1,11 @@
 package br.com.torresmath.key.manager
 
-import br.com.torresmath.key.manager.generateKey.toPixKey
-import com.google.protobuf.Any
-import com.google.rpc.Code
-import com.google.rpc.Status
+import br.com.torresmath.key.manager.generateKey.PixKey
 import io.micronaut.validation.validator.Validator
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.validation.ConstraintViolationException
 
 @Singleton
 class RequestConstraintValidator {
@@ -15,45 +13,17 @@ class RequestConstraintValidator {
     @Inject
     lateinit var validator: Validator
 
-    private val logger = LoggerFactory.getLogger(RequestConstraintValidator::class.java)
+    private val logger = LoggerFactory.getLogger(this.javaClass)
 
-    fun validate(request: KeyRequest): Status? {
-        val requestModel = request.toPixKey()
+    fun validate(pixKey: PixKey) {
 
-        val validation = validator.validate(requestModel)
+        val constraintErrors = validator.validate(pixKey)
 
-        val validIdentifier = requestModel.isValidIdentifier(validator)
-
-        if (validation.isEmpty() && validIdentifier) {
-            logger.info("Valid Request: $request")
-            return null
+        if (constraintErrors.isNotEmpty()) {
+            throw ConstraintViolationException(constraintErrors.toMutableSet())
         }
 
-        val errors = validation.map {
-            logger.info("Request Error:  ${it.message}")
-            ErrorDetail.newBuilder()
-                .setMessage(it.message)
-                .setCode(404)
-                .build()
-        }
-
-        val errorDetails = ErrorDetails.newBuilder()
-            .addAllDetails(errors)
-
-        if (validIdentifier.not()) {
-            errorDetails.addDetails(
-                ErrorDetail.newBuilder()
-                    .setMessage("Invalid key identifier: ${requestModel.keyIdentifier} - Given Key Type: ${requestModel.keyType}")
-                    .setCode(404)
-                    .build()
-            )
-        }
-
-        return Status.newBuilder()
-            .setCode(Code.INVALID_ARGUMENT.number)
-            .setMessage(errorDetails.getDetails(0).message)
-            .addDetails(
-                Any.pack(errorDetails.build())
-            ).build()
+        logger.info("Valid Pix Key Request: $pixKey")
+        return
     }
 }

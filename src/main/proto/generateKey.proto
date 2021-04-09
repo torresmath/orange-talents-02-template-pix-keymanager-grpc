@@ -9,6 +9,7 @@ package br.com.torresmath.key.manager;
 
 service GenerateKeyGrpcService {
   rpc generateKey (KeyRequest) returns (KeyResponse) {}
+  rpc gen(KeyRequest) returns (KeyResponse) {}
 }
 
 message KeyRequest {
@@ -19,7 +20,7 @@ message KeyRequest {
 }
 
 message KeyResponse {
-
+  string pixId = 1;
 }
 
 enum KeyType {

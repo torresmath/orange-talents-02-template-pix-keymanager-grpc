@@ -15,11 +15,11 @@ import org.mockito.kotlin.verifyZeroInteractions
 import javax.inject.Inject
 
 @MicronautTest
-internal class GenerateKeyGrpcServerTest {
+internal class GenerateKeyEndpointTest {
 
     @Inject
     @InjectMocks
-    lateinit var server: GenerateKeyGrpcServer
+    lateinit var server: GenerateKeyEndpoint
 
     @Inject
     lateinit var validator: Validator
@@ -32,8 +32,8 @@ internal class GenerateKeyGrpcServerTest {
         val mockObserver: StreamObserver<KeyResponse> = mock(StreamObserver::class.java) as StreamObserver<KeyResponse>
         val req = KeyRequest.newBuilder()
             .setAccountType(AccountType.CHECKING_ACCOUNT)
-            .setClientId("")
-            .setKeyIdentifier("")
+            .setClientId("11456456")
+            .setKeyIdentifier("42549789873")
             .setKeyType(KeyType.CPF)
             .build()
 
