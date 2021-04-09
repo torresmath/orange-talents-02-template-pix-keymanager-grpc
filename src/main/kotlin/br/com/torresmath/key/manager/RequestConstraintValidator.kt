@@ -1,6 +1,6 @@
 package br.com.torresmath.key.manager
 
-import br.com.torresmath.key.manager.generateKey.toValidationModel
+import br.com.torresmath.key.manager.generateKey.toPixKey
 import com.google.protobuf.Any
 import com.google.rpc.Code
 import com.google.rpc.Status
@@ -18,7 +18,7 @@ class RequestConstraintValidator {
     private val logger = LoggerFactory.getLogger(RequestConstraintValidator::class.java)
 
     fun validate(request: KeyRequest): Status? {
-        val requestModel = request.toValidationModel()
+        val requestModel = request.toPixKey()
 
         val validation = validator.validate(requestModel)
 
@@ -40,7 +40,7 @@ class RequestConstraintValidator {
         val errorDetails = ErrorDetails.newBuilder()
             .addAllDetails(errors)
 
-        if (!validIdentifier) {
+        if (validIdentifier.not()) {
             errorDetails.addDetails(
                 ErrorDetail.newBuilder()
                     .setMessage("Invalid key identifier: ${requestModel.keyIdentifier} - Given Key Type: ${requestModel.keyType}")

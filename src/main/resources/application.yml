@@ -10,3 +10,17 @@ micronaut:
         pool:
           enabled: true
           max-connections: 50
+
+datasources:
+  default:
+    url: ${DB_URL:`jdbc:mysql://localhost:3306/pix_key_manager`}
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:ajudazupper}
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update

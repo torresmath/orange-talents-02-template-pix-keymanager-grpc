@@ -1,5 +1,6 @@
 package br.com.torresmath.key.manager.generateKey
 
+import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -11,7 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import javax.inject.Inject
 
 @MicronautTest
-internal class KeyRequestValidationModelTest {
+internal class PixKeyTest {
 
     @Inject
     lateinit var validator: Validator
@@ -56,48 +57,33 @@ internal class KeyRequestValidationModelTest {
     @MethodSource("mobileParams")
     fun `Valid key identifiers for Key Type == Mobiler Number`(identifier: String, expected: Boolean) {
 
-        val req = KeyRequest.newBuilder()
-            .setKeyIdentifier(identifier)
-            .setKeyType(KeyType.MOBILE_NUMBER)
-            .build()
-
-        val keyRequestModel = KeyRequestValidationModel(req)
+        val keyRequestModel = PixKey("", KeyType.MOBILE_NUMBER, identifier, AccountType.CHECKING_ACCOUNT)
         assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
     }
 
     @ParameterizedTest
     @MethodSource("randomParams")
-    fun `Valid key identifiers for Type == RANDOM`(identifier: String?, expected: Boolean) {
-        val req = KeyRequest.newBuilder()
-            .setKeyIdentifier(identifier)
-            .setKeyType(KeyType.RANDOM)
-            .build()
-
-        val keyRequestModel = KeyRequestValidationModel(req)
+    fun `Valid key identifiers for Type == RANDOM`(identifier: String, expected: Boolean) {
+        val keyRequestModel = PixKey("", KeyType.RANDOM, identifier, AccountType.CHECKING_ACCOUNT)
         assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
     }
 
     @ParameterizedTest
     @MethodSource("cpfParams")
-    fun `Valid key identifiers for Type == CPF`(identifier: String?, expected: Boolean) {
-        val req = KeyRequest.newBuilder()
-            .setKeyIdentifier(identifier)
-            .setKeyType(KeyType.CPF)
-            .build()
-
-        val keyRequestModel = KeyRequestValidationModel(req)
+    fun `Valid key identifiers for Type == CPF`(identifier: String, expected: Boolean) {
+        val keyRequestModel = PixKey("", KeyType.CPF, identifier, AccountType.CHECKING_ACCOUNT)
         assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
     }
 
     @ParameterizedTest
     @MethodSource("emailParams")
-    fun `Valid key identifiers for Type == Email`(identifier: String?, expected: Boolean) {
-        val req = KeyRequest.newBuilder()
-            .setKeyIdentifier(identifier)
-            .setKeyType(KeyType.EMAIL)
-            .build()
-
-        val keyRequestModel = KeyRequestValidationModel(req)
+    fun `Valid key identifiers for Type == Email`(identifier: String, expected: Boolean) {
+        val keyRequestModel = PixKey(
+            clientId = "",
+            keyType = KeyType.EMAIL,
+            keyIdentifier = identifier,
+            accountType = AccountType.CHECKING_ACCOUNT
+        )
         assertEquals(expected, keyRequestModel.isValidIdentifier(validator))
     }
 }

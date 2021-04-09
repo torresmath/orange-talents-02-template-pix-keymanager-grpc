@@ -20,7 +20,7 @@ class GenerateKeyGrpcServer(
 
         val error = requestValidator.validate(request)
 
-        if (error != null) {
+        error?.let {
             responseObserver?.onError(io.grpc.protobuf.StatusProto.toStatusRuntimeException(error))
             return
         }

@@ -3,34 +3,44 @@ package br.com.torresmath.key.manager.generateKey
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.annotations.ValidEnum
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.validation.Validated
 import io.micronaut.validation.validator.Validator
 import org.hibernate.validator.constraints.br.CPF
+import java.time.LocalDateTime
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Entity
 @Validated
 @Introspected
-class KeyRequestValidationModel(keyRequest: KeyRequest) {
+class PixKey(
+    @field:NotNull(message = "Customer/Client ID cannot be null")
+    @field:NotBlank(message = "Customer/Client ID cannot be blank")
+    val clientId: String,
 
-    @field:NotNull
-    @field:NotBlank
-    val clientId: String = keyRequest.clientId
+    @field:NotNull(message = "PIX Key Type cannot be null")
+    val keyType: KeyType,
 
-    @field:NotNull
-    val keyType: KeyType = keyRequest.keyType
+    @field:NotNull(message = "PIX Key Identifier cannot be null")
+    @field:Size(max = 77, message = "PIX Key Identifier's length can't be greater than 77")
+    val keyIdentifier: String,
 
-    @field:NotNull
-    @field:Size(max = 77)
-    val keyIdentifier: String = keyRequest.keyIdentifier
+    @field:NotNull(message = "Customer/Client account type cannot be null")
+    val accountType: AccountType,
+) {
 
-    @field:NotNull
-    @field:ValidEnum(targetEnum = AccountType::class)
-    val accountType: AccountType = keyRequest.accountType
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null
+
+    val createdDate: LocalDateTime = LocalDateTime.now()
 
     fun isValidIdentifier(validator: Validator): Boolean {
 
@@ -47,6 +57,6 @@ class KeyRequestValidationModel(keyRequest: KeyRequest) {
     private class ValidEmail(@field:Email val identifier: String)
 }
 
-fun KeyRequest.toValidationModel(): KeyRequestValidationModel {
-    return KeyRequestValidationModel(this)
+fun KeyRequest.toPixKey(): PixKey {
+    return PixKey(clientId = this.clientId, keyType = this.keyType, keyIdentifier = this.keyIdentifier, accountType = this.accountType)
 }
