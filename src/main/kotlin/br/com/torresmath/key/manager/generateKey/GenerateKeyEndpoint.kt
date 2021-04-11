@@ -27,9 +27,6 @@ class GenerateKeyEndpoint(
         request!!
 
         val pixKey = request.toPixKey()
-            .apply {
-                this.verifyKeyType()
-            }
 
         requestValidator.validate(pixKey)
 

@@ -3,7 +3,6 @@ package br.com.torresmath.key.manager.shared
 import br.com.torresmath.key.manager.ErrorDetail
 import br.com.torresmath.key.manager.exceptions.NotFoundCustomerException
 import br.com.torresmath.key.manager.exceptions.PixKeyAlreadyExistsException
-import br.com.torresmath.key.manager.generateKey.GenerateKeyEndpoint
 import com.google.rpc.BadRequest
 import com.google.rpc.Code
 import io.grpc.Status
@@ -19,20 +18,22 @@ import javax.validation.ConstraintViolationException
 
 @Singleton
 @InterceptorBean(ErrorHandler::class)
-class ExceptionHandlerInterceptor : MethodInterceptor<GenerateKeyEndpoint, Any?>{
+class ExceptionHandlerInterceptor : MethodInterceptor<Any, Any?> {
 
     private val LOGGER = LoggerFactory.getLogger(this.javaClass)
 
-    override fun intercept(context: MethodInvocationContext<GenerateKeyEndpoint, Any?>): Any? {
+    override fun intercept(context: MethodInvocationContext<Any, Any?>): Any? {
         try {
             return context.proceed()
         } catch (e: Exception) {
+
             val statusError = when (e) {
 //                is IllegalArgumentException -> Status.INVALID_ARGUMENT.withDescription(e.message).asRuntimeException()
 //                is IllegalStateException -> Status.FAILED_PRECONDITION.withDescription(e.message).asRuntimeException()
                 is ConstraintViolationException -> handleConstraintValidationException(e)
                 is PixKeyAlreadyExistsException -> handlePixAlreadyExistsException(e)
                 is NotFoundCustomerException -> handleNotFoundCustomerException(e)
+
                 else -> Status.UNKNOWN.withDescription("unexpected error happened").asRuntimeException()
             }
 
@@ -43,31 +44,22 @@ class ExceptionHandlerInterceptor : MethodInterceptor<GenerateKeyEndpoint, Any?>
     }
 
     private fun handleNotFoundCustomerException(e: NotFoundCustomerException): StatusRuntimeException {
-        val statusProto = com.google.rpc.Status.newBuilder()
-            .setCode(Code.NOT_FOUND_VALUE)
-            .setMessage(e.message)
-            .addDetails(
-                com.google.protobuf.Any.pack(
-                    ErrorDetail.newBuilder()
-                        .setCode(e.code)
-                        .setMessage(e.message)
-                        .build()
-                )
-            ).build()
-
-        return StatusProto.toStatusRuntimeException(statusProto)
+        return buildCustomException(e.message, e.code, Code.NOT_FOUND)
     }
 
     private fun handlePixAlreadyExistsException(e: PixKeyAlreadyExistsException): StatusRuntimeException {
+        return buildCustomException(e.message, e.code, Code.ALREADY_EXISTS)
+    }
 
+    private fun buildCustomException(message: String?, httpCode: Int, protoCode: Code): StatusRuntimeException {
         val statusProto = com.google.rpc.Status.newBuilder()
-            .setCode(Code.ALREADY_EXISTS_VALUE)
-            .setMessage(e.message)
+            .setCode(protoCode.number)
+            .setMessage(message)
             .addDetails(
                 com.google.protobuf.Any.pack(
                     ErrorDetail.newBuilder()
-                        .setCode(e.code)
-                        .setMessage(e.message)
+                        .setCode(httpCode)
+                        .setMessage(message)
                         .build()
                 )
             ).build()
@@ -75,12 +67,14 @@ class ExceptionHandlerInterceptor : MethodInterceptor<GenerateKeyEndpoint, Any?>
         return StatusProto.toStatusRuntimeException(statusProto)
     }
 
-    private fun handleConstraintValidationException(e: ConstraintViolationException) : StatusRuntimeException {
+    private fun handleConstraintValidationException(e: ConstraintViolationException): StatusRuntimeException {
 
         val badRequest = BadRequest.newBuilder()
             .addAllFieldViolations(e.constraintViolations.map {
                 BadRequest.FieldViolation.newBuilder()
-                    .setField(it.propertyPath.last().name?:it.rootBeanClass.simpleName) // In case of class level Constraints
+                    .setField(
+                        it.propertyPath.last().name ?: it.rootBeanClass.simpleName // In case of class level Constraints
+                    )
                     .setDescription(it.message)
                     .build()
             }).build()
@@ -91,7 +85,7 @@ class ExceptionHandlerInterceptor : MethodInterceptor<GenerateKeyEndpoint, Any?>
             .addDetails(com.google.protobuf.Any.pack(badRequest))
             .build()
 
-        LOGGER.info("$statusProto")
+        LOGGER.info("Status Proto: $statusProto")
         return StatusProto.toStatusRuntimeException(statusProto)
     }
 }

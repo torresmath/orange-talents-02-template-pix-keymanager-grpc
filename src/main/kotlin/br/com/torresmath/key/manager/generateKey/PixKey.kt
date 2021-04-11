@@ -48,11 +48,6 @@ class PixKey(
         return "PixKey(clientId='$clientId', keyType=$keyType, keyIdentifier='$keyIdentifier', accountType=$accountType)"
     }
 
-    fun verifyKeyType() {
-        if (keyType == KeyType.RANDOM)
-            keyIdentifier = UUID.randomUUID().toString()
-    }
-
 }
 
 fun KeyRequest.toPixKey(): PixKey {
@@ -61,5 +56,8 @@ fun KeyRequest.toPixKey(): PixKey {
         keyType = this.keyType,
         keyIdentifier = this.keyIdentifier,
         accountType = this.accountType
-    )
+    ).apply {
+        if (this.keyType == KeyType.RANDOM)
+            this.keyIdentifier = UUID.randomUUID().toString()
+    }
 }
