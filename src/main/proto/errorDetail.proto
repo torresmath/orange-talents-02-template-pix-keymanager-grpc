@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.torresmath.key.manager";
+option java_outer_classname = "ErrorDetailGrpc";
+option objc_class_prefix = "HLW";
+
+package br.com.torresmath.key.manager;
+
+message ErrorDetail {
+  int32 code = 1;
+  string message = 2;
+}

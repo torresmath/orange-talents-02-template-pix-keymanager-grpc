@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.torresmath.key.manager";
+option java_outer_classname = "DeleteKeyGrpc";
+option objc_class_prefix = "HLW";
+
+package br.com.torresmath.key.manager;
+
+import "google/protobuf/empty.proto";
+
+service DeleteKeyGrpcService {
+  rpc deleteKey(DeleteKeyRequest) returns(google.protobuf.Empty) {}
+}
+
+message DeleteKeyRequest {
+  string clientId = 1;
+  string pixId = 2;
+}

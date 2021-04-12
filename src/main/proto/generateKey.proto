@@ -9,7 +9,6 @@ package br.com.torresmath.key.manager;
 
 service GenerateKeyGrpcService {
   rpc generateKey (KeyRequest) returns (KeyResponse) {}
-  rpc gen(KeyRequest) returns (KeyResponse) {}
 }
 
 message KeyRequest {
@@ -33,13 +32,4 @@ enum KeyType {
 enum AccountType {
   CHECKING_ACCOUNT = 0;
   SAVINGS_ACCOUNT = 1;
-}
-
-message ErrorDetail {
-  int32 code = 1;
-  string message = 2;
-}
-
-message ErrorDetails {
-  repeated ErrorDetail details = 1;
 }

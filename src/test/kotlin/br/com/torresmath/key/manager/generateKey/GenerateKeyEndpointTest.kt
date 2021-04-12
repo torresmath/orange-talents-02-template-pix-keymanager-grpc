@@ -2,9 +2,14 @@ package br.com.torresmath.key.manager.generateKey
 
 import br.com.torresmath.key.manager.*
 import com.google.rpc.BadRequest
+import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.grpc.protobuf.StatusProto
+import io.micronaut.context.annotation.Bean
+import io.micronaut.context.annotation.Factory
+import io.micronaut.grpc.annotation.GrpcChannel
+import io.micronaut.grpc.server.GrpcServerChannel
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
@@ -155,5 +160,15 @@ internal class GenerateKeyEndpointTest(
 
         return details.fieldViolationsList
             .map { it.field to it.description }
+    }
+}
+
+@Factory
+private class GenerateKeyClient {
+
+    @Bean
+    fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel):
+            GenerateKeyGrpcServiceGrpc.GenerateKeyGrpcServiceBlockingStub {
+        return GenerateKeyGrpcServiceGrpc.newBlockingStub(channel)
     }
 }
