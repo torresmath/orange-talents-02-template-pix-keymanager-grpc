@@ -26,7 +26,6 @@ class ExceptionHandlerInterceptor : MethodInterceptor<Any, Any?> {
         try {
             return context.proceed()
         } catch (e: Exception) {
-
             val statusError = when (e) {
 //                is IllegalArgumentException -> Status.INVALID_ARGUMENT.withDescription(e.message).asRuntimeException()
 //                is IllegalStateException -> Status.FAILED_PRECONDITION.withDescription(e.message).asRuntimeException()

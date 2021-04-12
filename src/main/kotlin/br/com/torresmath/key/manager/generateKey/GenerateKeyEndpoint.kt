@@ -45,7 +45,7 @@ class GenerateKeyEndpoint(
 
         pixKeyRepository.save(pixKey)
 
-        logger.info("Successfully created Pix Keyd: ${pixKey.pixUuid}")
+        logger.info("Successfully created Pix Key: ${pixKey.pixUuid}")
         val response = KeyResponse.newBuilder()
             .setPixId(pixKey.pixUuid)
             .build()

@@ -5,6 +5,7 @@ import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifierValidator
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -95,5 +96,23 @@ internal class ValidKeyIdentifierValidatorTest(@Inject val validator: ValidKeyId
             accountType = AccountType.CHECKING_ACCOUNT
         )
         assertEquals(expected, validator.isValid(pix, mock))
+    }
+
+    @Test
+    fun `should return false if null entry`() {
+        assertEquals(false, validator.isValid(null, Mockito.mock(ConstraintValidatorContext::class.java)))
+    }
+
+    @Test
+    fun `should return false with invalid KeyType`() {
+
+        val pix = PixKey(
+            clientId = "",
+            keyType = KeyType.UNRECOGNIZED,
+            keyIdentifier = "",
+            accountType = AccountType.CHECKING_ACCOUNT
+        )
+
+        assertEquals(false, validator.isValid(null, Mockito.mock(ConstraintValidatorContext::class.java)))
     }
 }

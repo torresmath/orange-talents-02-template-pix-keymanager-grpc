@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: keyManagerGrpc
+    name: key-manager-grpc
   http:
     services:
       erp-itau:

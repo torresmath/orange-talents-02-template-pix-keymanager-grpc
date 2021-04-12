@@ -12,6 +12,7 @@ import javax.validation.ConstraintValidator
 import javax.validation.ConstraintValidatorContext
 import javax.validation.Payload
 import javax.validation.constraints.Email
+import javax.validation.constraints.NotBlank
 import kotlin.reflect.KClass
 
 @MustBeDocumented
@@ -44,7 +45,7 @@ class ValidKeyIdentifierValidator : ConstraintValidator<ValidKeyIdentifier, PixK
 
     }
 
-    private class ValidCPF(@field:CPF val identifier: String)
-    private class ValidEmail(@field:Email val identifier: String)
+    private class ValidCPF(@field:NotBlank @field:CPF val identifier: String)
+    private class ValidEmail(@field:NotBlank @field:Email val identifier: String)
 
 }

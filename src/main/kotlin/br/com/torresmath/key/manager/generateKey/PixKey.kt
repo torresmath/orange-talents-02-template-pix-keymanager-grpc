@@ -59,5 +59,9 @@ fun KeyRequest.toPixKey(): PixKey {
     ).apply {
         if (this.keyType == KeyType.RANDOM)
             this.keyIdentifier = UUID.randomUUID().toString()
+
+        if (this.keyType == KeyType.CPF)
+            this.keyIdentifier = this.keyIdentifier.replace("[.-]".toRegex(), "")
+
     }
 }

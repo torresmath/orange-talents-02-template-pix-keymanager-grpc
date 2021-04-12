@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-noarg:${kotlinVersion}"
+    }
+}
+
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.4.30"
     id("org.jetbrains.kotlin.kapt") version "1.4.30"
@@ -9,6 +15,8 @@ plugins {
 
 version = "0.1"
 group = "br.com.torresmath.key.manager"
+
+apply plugin: "kotlin-jpa"
 
 repositories {
     mavenCentral()
@@ -50,6 +58,8 @@ dependencies {
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.0")
+    testImplementation('org.hamcrest:hamcrest:2.2')
+    testImplementation("com.h2database:h2")
 
 }
 
