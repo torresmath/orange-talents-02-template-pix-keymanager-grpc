@@ -1,4 +1,4 @@
-package br.com.torresmath.key.manager.generateKey
+package br.com.torresmath.key.manager.pix.generateKey
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyType
@@ -32,9 +32,12 @@ internal class ValidKeyIdentifierValidatorTest(@Inject val validator: ValidKeyId
 
         @JvmStatic
         fun randomParams() = listOf(
-            Arguments.of("22ccc326-995f-11eb-a8b3-0242ac130003", true),
-            Arguments.of("value", false),
-            Arguments.of("", false),
+            Arguments.of("22ccc326-995f-11eb-a8b3-0242ac130003", PixKeyStatus.ACTIVE, true),
+            Arguments.of("value", PixKeyStatus.ACTIVE, false),
+            Arguments.of("", PixKeyStatus.ACTIVE, false),
+            Arguments.of("22ccc326-995f-11eb-a8b3-0242ac130003", PixKeyStatus.INACTIVE, false),
+            Arguments.of("value", PixKeyStatus.INACTIVE, false),
+            Arguments.of("", PixKeyStatus.INACTIVE, true),
         )
 
         @JvmStatic
@@ -65,11 +68,12 @@ internal class ValidKeyIdentifierValidatorTest(@Inject val validator: ValidKeyId
 
     @ParameterizedTest
     @MethodSource("randomParams")
-    fun `Valid key identifiers for Type == RANDOM`(identifier: String, expected: Boolean) {
+    fun `Valid key identifiers for Type == RANDOM`(identifier: String, status: PixKeyStatus, expected: Boolean) {
 
         val mock = Mockito.mock(ConstraintValidatorContext::class.java)
 
         val pix = PixKey("", KeyType.RANDOM, identifier, AccountType.CHECKING_ACCOUNT)
+        pix.status = status
         assertEquals(expected, validator.isValid(pix, mock))
     }
 

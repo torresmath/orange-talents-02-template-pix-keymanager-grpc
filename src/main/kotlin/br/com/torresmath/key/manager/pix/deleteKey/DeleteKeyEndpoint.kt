@@ -1,9 +1,9 @@
-package br.com.torresmath.key.manager.deleteKey
+package br.com.torresmath.key.manager.pix.deleteKey
 
 import br.com.torresmath.key.manager.DeleteKeyGrpcServiceGrpc
 import br.com.torresmath.key.manager.DeleteKeyRequest
-import br.com.torresmath.key.manager.generateKey.PixKey
-import br.com.torresmath.key.manager.generateKey.PixKeyRepository
+import br.com.torresmath.key.manager.pix.generateKey.PixKey
+import br.com.torresmath.key.manager.pix.generateKey.PixKeyRepository
 import com.google.protobuf.Empty
 import com.google.rpc.Code
 import com.google.rpc.Status

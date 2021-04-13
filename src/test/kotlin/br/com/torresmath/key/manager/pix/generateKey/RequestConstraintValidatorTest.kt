@@ -1,6 +1,7 @@
-package br.com.torresmath.key.manager
+package br.com.torresmath.key.manager.pix.generateKey
 
-import br.com.torresmath.key.manager.generateKey.PixKey
+import br.com.torresmath.key.manager.AccountType
+import br.com.torresmath.key.manager.KeyType
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import io.micronaut.validation.validator.Validator
 import org.junit.jupiter.api.Test
@@ -28,7 +29,10 @@ internal class RequestConstraintValidatorTest(
 
     @Test
     fun `should not throw exception`() {
-        val pixKey = PixKey("232ddbc6-9b9d-11eb-a8b3-0242ac130003", KeyType.CPF, "42549789873", AccountType.CHECKING_ACCOUNT)
+        val pixKey = PixKey("232ddbc6-9b9d-11eb-a8b3-0242ac130003",
+            KeyType.CPF, "42549789873",
+            AccountType.CHECKING_ACCOUNT
+        )
 
         assertDoesNotThrow { constraintValidator.validate(pixKey) }
     }

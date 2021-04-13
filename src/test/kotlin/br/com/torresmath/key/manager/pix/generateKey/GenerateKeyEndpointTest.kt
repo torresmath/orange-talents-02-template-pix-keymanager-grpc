@@ -1,6 +1,9 @@
-package br.com.torresmath.key.manager.generateKey
+package br.com.torresmath.key.manager.pix.generateKey
 
-import br.com.torresmath.key.manager.*
+import br.com.torresmath.key.manager.AccountType
+import br.com.torresmath.key.manager.GenerateKeyGrpcServiceGrpc
+import br.com.torresmath.key.manager.KeyRequest
+import br.com.torresmath.key.manager.KeyType
 import com.google.rpc.BadRequest
 import io.grpc.ManagedChannel
 import io.grpc.Status
@@ -57,7 +60,9 @@ internal class GenerateKeyEndpointTest(
     var pixKey: PixKey = defaultRequest.toPixKey()
 
     @BeforeEach
-    internal fun setUp() { keyRepository.save(pixKey) }
+    internal fun setUp() {
+        keyRepository.save(pixKey)
+    }
 
     @AfterEach
     internal fun tearDown() {
@@ -84,7 +89,13 @@ internal class GenerateKeyEndpointTest(
     fun `should return ALREADY_EXISTS`() {
         Mockito.`when`(
             erpMock.retrieveCustomer(defaultRequest.clientId)
-        ).thenReturn(ErpItauCustomer(defaultRequest.clientId))
+        ).thenReturn(
+            ErpItauCustomer(
+                defaultRequest.clientId,
+                "Customer",
+                defaultRequest.keyIdentifier
+            )
+        )
 
         val exc = assertThrows<StatusRuntimeException> { blockingStub.generateKey(defaultRequest) }
         assertEquals(Status.ALREADY_EXISTS.code, exc.status.code)
@@ -115,7 +126,13 @@ internal class GenerateKeyEndpointTest(
     fun `should save successfully`(keyType: KeyType, identifier: String) {
         Mockito.`when`(
             erpMock.retrieveCustomer(defaultRequest.clientId)
-        ).thenReturn(ErpItauCustomer(defaultRequest.clientId))
+        ).thenReturn(
+            ErpItauCustomer(
+                defaultRequest.clientId,
+                "Customer",
+                defaultRequest.keyIdentifier
+            )
+        )
 
         val request = KeyRequest.newBuilder()
             .setKeyType(keyType)
@@ -144,12 +161,14 @@ internal class GenerateKeyEndpointTest(
 
         val exc = assertThrows<StatusRuntimeException> { blockingStub.generateKey(request) }
         with(exc) {
-            assertEquals(Status.INVALID_ARGUMENT.code ,exc.status.code)
+            assertEquals(Status.INVALID_ARGUMENT.code, exc.status.code)
             assertEquals("Request with invalid parameters!", exc.status.description)
 
-            assertThat(violations(), containsInAnyOrder(
-                Pair("PixKey", "Invalid pix key identifier for provided pix key type")
-            ))
+            assertThat(
+                violations(), containsInAnyOrder(
+                    Pair("PixKey", "Invalid pix key identifier for provided pix key type")
+                )
+            )
         }
     }
 

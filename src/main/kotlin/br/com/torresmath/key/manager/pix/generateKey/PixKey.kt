@@ -1,4 +1,4 @@
-package br.com.torresmath.key.manager.generateKey
+package br.com.torresmath.key.manager.pix.generateKey
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
@@ -8,10 +8,7 @@ import io.micronaut.core.annotation.Introspected
 import io.micronaut.validation.Validated
 import java.time.LocalDateTime
 import java.util.*
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import javax.persistence.*
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -40,9 +37,15 @@ class PixKey(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
+    @NotNull
     val createdDate: LocalDateTime = LocalDateTime.now()
 
+    @NotNull
     val pixUuid: String = UUID.randomUUID().toString()
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    var status: PixKeyStatus = PixKeyStatus.INACTIVE
 
     override fun toString(): String {
         return "PixKey(clientId='$clientId', keyType=$keyType, keyIdentifier='$keyIdentifier', accountType=$accountType)"
@@ -58,7 +61,7 @@ fun KeyRequest.toPixKey(): PixKey {
         accountType = this.accountType
     ).apply {
         if (this.keyType == KeyType.RANDOM)
-            this.keyIdentifier = UUID.randomUUID().toString()
+            this.keyIdentifier = ""
 
         if (this.keyType == KeyType.CPF)
             this.keyIdentifier = this.keyIdentifier.replace("[.-]".toRegex(), "")

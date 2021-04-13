@@ -1,9 +1,8 @@
-package br.com.torresmath.key.manager.generateKey
+package br.com.torresmath.key.manager.pix.generateKey
 
 import br.com.torresmath.key.manager.GenerateKeyGrpcServiceGrpc
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyResponse
-import br.com.torresmath.key.manager.RequestConstraintValidator
 import br.com.torresmath.key.manager.exceptions.NotFoundCustomerException
 import br.com.torresmath.key.manager.exceptions.PixKeyAlreadyExistsException
 import br.com.torresmath.key.manager.shared.ErrorHandler
@@ -30,7 +29,11 @@ class GenerateKeyEndpoint(
 
         requestValidator.validate(pixKey)
 
-        itauClient.runCatching { retrieveCustomer(request.clientId) }
+        itauClient.runCatching {
+            retrieveCustomer(request.clientId).let {
+                logger.info("Retrieved Customer: $it")
+            }
+        }
             .onFailure {
                 throw NotFoundCustomerException("Couldn't find customer with given identifier: ${request.clientId}")
             }

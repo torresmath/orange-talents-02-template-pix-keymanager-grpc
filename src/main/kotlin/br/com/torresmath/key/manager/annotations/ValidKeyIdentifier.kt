@@ -1,7 +1,8 @@
 package br.com.torresmath.key.manager.annotations
 
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.generateKey.PixKey
+import br.com.torresmath.key.manager.pix.generateKey.PixKey
+import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
 import io.micronaut.validation.validator.Validator
 import org.hibernate.validator.constraints.br.CPF
 import java.util.*
@@ -36,13 +37,19 @@ class ValidKeyIdentifierValidator : ConstraintValidator<ValidKeyIdentifier, PixK
             return false
 
         return when (value.keyType) {
-            KeyType.RANDOM -> kotlin.runCatching { UUID.fromString(value.keyIdentifier) }.isSuccess
+            KeyType.RANDOM -> validRandom(value)
             KeyType.MOBILE_NUMBER -> "^\\+[1-9][0-9]\\d{1,14}\$".toRegex().matches(value.keyIdentifier)
             KeyType.CPF -> validator.validate(ValidCPF(value.keyIdentifier)).isEmpty()
             KeyType.EMAIL -> validator.validate(ValidEmail(value.keyIdentifier)).isEmpty()
             else -> false
         }
+    }
 
+    private fun validRandom(value: PixKey): Boolean {
+        return when (value.status) {
+            PixKeyStatus.ACTIVE -> kotlin.runCatching { UUID.fromString(value.keyIdentifier) }.isSuccess
+            else -> value.keyIdentifier.isBlank()
+        }
     }
 
     private class ValidCPF(@field:NotBlank @field:CPF val identifier: String)
