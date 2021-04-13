@@ -4,11 +4,13 @@ import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifier
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.*
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.validation.Validated
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
+import javax.transaction.Transactional
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -22,6 +24,7 @@ class PixKey(
     @field:NotBlank(message = "Customer/Client ID cannot be blank")
     val clientId: String,
 
+    @Enumerated(EnumType.STRING)
     @field:NotNull(message = "PIX Key Type cannot be null")
     val keyType: KeyType,
 
@@ -29,6 +32,7 @@ class PixKey(
     @field:Size(max = 77, message = "PIX Key Identifier's length can't be greater than 77")
     var keyIdentifier: String,
 
+    @Enumerated(EnumType.STRING)
     @field:NotNull(message = "Customer/Client account type cannot be null")
     val accountType: AccountType,
 ) {
@@ -46,6 +50,29 @@ class PixKey(
     @NotNull
     @Enumerated(EnumType.STRING)
     var status: PixKeyStatus = PixKeyStatus.INACTIVE
+
+    @Transactional
+    fun submitKey(
+        itauAccount: ErpItauAccount,
+        bcbClient: BcbClient,
+        repository: InactivePixRepository
+    ) {
+        val request = BcbCreatePixKeyRequest(
+            this.keyType.toBcbKeyType(),
+            this.keyIdentifier,
+            itauAccount.toBcbBankAccountRequest(),
+            BcbCreatePixKeyRequest.BcbOwnerRequest(
+                BcbCreatePixKeyRequest.BcbOwnerRequest.BcbOwnerType.NATURAL_PERSON,
+                itauAccount.titular.nome,
+                itauAccount.titular.cpf
+            )
+        )
+
+        bcbClient.generatePixKey(request).let {
+            this.status = PixKeyStatus.ACTIVE
+            repository.update(this)
+        }
+    }
 
     override fun toString(): String {
         return "PixKey(clientId='$clientId', keyType=$keyType, keyIdentifier='$keyIdentifier', accountType=$accountType)"
@@ -66,5 +93,12 @@ fun KeyRequest.toPixKey(): PixKey {
         if (this.keyType == KeyType.CPF)
             this.keyIdentifier = this.keyIdentifier.replace("[.-]".toRegex(), "")
 
+    }
+}
+
+private fun KeyType.toBcbKeyType(): String {
+    return when (this) {
+        KeyType.MOBILE_NUMBER -> "PHONE"
+        else -> this.name
     }
 }

@@ -29,6 +29,7 @@ class GenerateKeyEndpoint(
 
         requestValidator.validate(pixKey)
 
+        // @todo refactor to retrieveCustomerAccount endpoint
         itauClient.runCatching {
             retrieveCustomer(request.clientId).let {
                 logger.info("Retrieved Customer: $it")
@@ -51,6 +52,7 @@ class GenerateKeyEndpoint(
         logger.info("Successfully created Pix Key: ${pixKey.pixUuid}")
         val response = KeyResponse.newBuilder()
             .setPixId(pixKey.pixUuid)
+            .setStatus(pixKey.status.toProtoKeyStatus())
             .build()
 
         responseObserver!!.onNext(response)

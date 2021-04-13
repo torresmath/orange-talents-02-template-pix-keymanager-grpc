@@ -1,5 +1,6 @@
 package br.com.torresmath.key.manager.pix.generateKey
 
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.QueryValue
@@ -33,3 +34,20 @@ data class ErpItauInstitution(
     val nome: String,
     val ispb: String
 )
+
+fun ErpItauAccount.toBcbBankAccountRequest(): BcbCreatePixKeyRequest.BcbBankAccountRequest {
+    return BcbCreatePixKeyRequest.BcbBankAccountRequest(
+        this.instituicao.ispb,
+        this.agencia,
+        this.numero,
+        stringToBcbAccountType(this.tipo)
+    )
+}
+
+fun stringToBcbAccountType(value: String): BcbCreatePixKeyRequest.BcbBankAccountRequest.BcbAccountType {
+    return when (value) {
+        "CONTA_CORRENTE" -> BcbCreatePixKeyRequest.BcbBankAccountRequest.BcbAccountType.CACC
+        "CONTA_POUPANCA" -> BcbCreatePixKeyRequest.BcbBankAccountRequest.BcbAccountType.SVGS
+        else -> throw IllegalStateException("ERROR - Impossible conversion: $value to BcbAccountType")
+    }
+}

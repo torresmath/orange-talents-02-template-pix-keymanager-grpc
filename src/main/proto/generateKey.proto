@@ -20,6 +20,12 @@ message KeyRequest {
 
 message KeyResponse {
   string pixId = 1;
+  KeyStatus status = 2;
+}
+
+enum KeyStatus {
+  INACTIVE = 0;
+  ACTIVE = 1;
 }
 
 enum KeyType {

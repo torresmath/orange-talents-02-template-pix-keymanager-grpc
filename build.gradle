@@ -42,6 +42,9 @@ dependencies {
     // HTTP Client
     implementation("io.micronaut:micronaut-http-client")
 
+    // Jackson XML
+    implementation("io.micronaut.xml:micronaut-jackson-xml")
+
     // Hibernate
     implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator:3.0.0")
     implementation("org.hibernate:hibernate-validator:6.1.6.Final")

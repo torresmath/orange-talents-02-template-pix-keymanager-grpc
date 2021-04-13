@@ -5,7 +5,14 @@ micronaut:
     services:
       erp-itau:
         urls:
-          - http://localhost:9091
+          - ${ERP_ITAU_URL:`http://localhost:9091`}
+        read-timeout: 5s
+        pool:
+          enabled: true
+          max-connections: 50
+      bcb:
+        urls:
+          - ${BCB_URL:`http://localhost:8082`}
         read-timeout: 5s
         pool:
           enabled: true
