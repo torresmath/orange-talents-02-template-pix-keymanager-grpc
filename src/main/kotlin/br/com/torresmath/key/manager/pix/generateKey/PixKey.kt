@@ -6,6 +6,7 @@ import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifier
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbOwner
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.InactivePixRepository
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -59,7 +60,7 @@ class PixKey(
         repository: InactivePixRepository
     ) {
 
-        val request: BcbCreatePixKeyRequest = getBcbCreatePixRequest(itauAccount)
+        val request: BcbCreatePixKeyRequest = buildBcbCreatePixRequest(itauAccount)
 
         kotlin.runCatching {
             bcbClient.generatePixKey(request)
@@ -77,13 +78,13 @@ class PixKey(
         }
     }
 
-    protected fun getBcbCreatePixRequest(itauAccount: ErpItauAccount): BcbCreatePixKeyRequest {
+    protected fun buildBcbCreatePixRequest(itauAccount: ErpItauAccount): BcbCreatePixKeyRequest {
         return BcbCreatePixKeyRequest(
             keyType = this.keyType.toBcbKeyType(),
             key = this.keyIdentifier,
             bankAccount = itauAccount.toBcbBankAccountRequest(),
-            owner = BcbCreatePixKeyRequest.BcbOwnerRequest(
-                type = BcbCreatePixKeyRequest.BcbOwnerRequest.BcbOwnerType.NATURAL_PERSON,
+            owner = BcbOwner(
+                type = BcbOwner.BcbOwnerType.NATURAL_PERSON,
                 name = itauAccount.titular.nome,
                 taxIdNumber = itauAccount.titular.cpf
             )

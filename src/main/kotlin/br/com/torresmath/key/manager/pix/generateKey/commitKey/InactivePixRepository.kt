@@ -4,12 +4,10 @@ import br.com.torresmath.key.manager.pix.generateKey.PixKey
 import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
 import io.micronaut.data.annotation.Repository
 import io.micronaut.transaction.SynchronousTransactionManager
-import io.micronaut.transaction.TransactionDefinition
 import org.hibernate.LockOptions
 import java.sql.Connection
 import javax.persistence.EntityManager
 import javax.persistence.LockModeType
-import javax.transaction.Transactional
 
 @Repository
 open class InactivePixRepository(

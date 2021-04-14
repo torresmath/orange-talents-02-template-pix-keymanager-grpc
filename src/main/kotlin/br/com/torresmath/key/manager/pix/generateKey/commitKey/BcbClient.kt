@@ -7,7 +7,7 @@ import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.retry.annotation.CircuitBreaker
 
-@CircuitBreaker(delay = "5s", attempts = "3", reset = "20s", excludes = [HttpClientResponseException::class])
+@CircuitBreaker(delay = "5s", attempts = "3", excludes = [HttpClientResponseException::class])
 @Client("bcb")
 interface BcbClient {
 
@@ -19,37 +19,37 @@ interface BcbClient {
 data class BcbCreatePixKeyRequest(
     val keyType: String,
     val key: String,
-    val bankAccount: BcbBankAccountRequest,
-    val owner: BcbOwnerRequest
-) {
-    data class BcbBankAccountRequest(
-        val participant: String,
-        val branch: String,
-        val accountNumber: String,
-        val accountType: BcbAccountType
-    ) {
-        enum class BcbAccountType {
-            CACC,
-            SVGS
-        }
-    }
+    val bankAccount: BcbBankAccount,
+    val owner: BcbOwner
+)
 
-    data class BcbOwnerRequest(
-        val type: BcbOwnerType,
-        val name: String,
-        val taxIdNumber: String
-    ) {
-        enum class BcbOwnerType {
-            NATURAL_PERSON,
-            LEGAL_PERSON
-        }
+data class BcbBankAccount(
+    val participant: String,
+    val branch: String,
+    val accountNumber: String,
+    val accountType: BcbAccountType
+) {
+    enum class BcbAccountType {
+        CACC,
+        SVGS
+    }
+}
+
+data class BcbOwner(
+    val type: BcbOwnerType,
+    val name: String,
+    val taxIdNumber: String
+) {
+    enum class BcbOwnerType {
+        NATURAL_PERSON,
+        LEGAL_PERSON
     }
 }
 
 data class BcbCreatePixKeyResponse(
     val keyType: String,
     val key: String,
-    val bankAccount: BcbCreatePixKeyRequest.BcbBankAccountRequest,
-    val owner: BcbCreatePixKeyRequest.BcbOwnerRequest,
+    val bankAccount: BcbBankAccount,
+    val owner: BcbOwner,
     val createdAt: String
 )

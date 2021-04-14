@@ -4,6 +4,7 @@ import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.GenerateKeyGrpcServiceGrpc
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.toErpItauValue
 import com.google.rpc.BadRequest
 import io.grpc.ManagedChannel
 import io.grpc.Status
@@ -37,13 +38,14 @@ internal class GenerateKeyEndpointTest(
     @Inject
     val blockingStub: GenerateKeyGrpcServiceGrpc.GenerateKeyGrpcServiceBlockingStub,
     @Inject
-    val erpMock: ErpItauClient,
-    @Inject
     val requestValidator: RequestConstraintValidator,
 ) {
 
     @field:Inject
     lateinit var keyRepository: PixKeyRepository
+
+    @Inject
+    lateinit var erpMock: ErpItauClient
 
     @MockBean(ErpItauClient::class)
     fun erpMock(): ErpItauClient {
@@ -78,7 +80,7 @@ internal class GenerateKeyEndpointTest(
             .build()
 
         Mockito.`when`(
-            erpMock.retrieveCustomer(request.clientId)
+            erpMock.retrieveCustomerAccount(request.clientId, request.accountType.toErpItauValue())
         ).thenThrow(HttpClientResponseException("Not found customer", HttpResponse.notFound("")))
 
         val exc = assertThrows<StatusRuntimeException> { blockingStub.generateKey(request) }
@@ -88,12 +90,14 @@ internal class GenerateKeyEndpointTest(
     @Test
     fun `should return ALREADY_EXISTS`() {
         Mockito.`when`(
-            erpMock.retrieveCustomer(defaultRequest.clientId)
+            erpMock.retrieveCustomerAccount(defaultRequest.clientId, defaultRequest.accountType.toErpItauValue())
         ).thenReturn(
-            ErpItauCustomer(
-                defaultRequest.clientId,
-                "Customer",
-                defaultRequest.keyIdentifier
+            ErpItauAccount(
+                "CONTA_CORRENTE",
+                ErpItauInstitution("ITAÚ UNIBANCO S.A.", "60701190"),
+                "0001",
+                "291900",
+                ErpItauCustomer(defaultRequest.clientId, "User test", defaultRequest.keyIdentifier)
             )
         )
 
@@ -125,12 +129,14 @@ internal class GenerateKeyEndpointTest(
     @MethodSource("validParams")
     fun `should save successfully`(keyType: KeyType, identifier: String) {
         Mockito.`when`(
-            erpMock.retrieveCustomer(defaultRequest.clientId)
+            erpMock.retrieveCustomerAccount(defaultRequest.clientId, defaultRequest.accountType.toErpItauValue())
         ).thenReturn(
-            ErpItauCustomer(
-                defaultRequest.clientId,
-                "Customer",
-                defaultRequest.keyIdentifier
+            ErpItauAccount(
+                "CONTA_CORRENTE",
+                ErpItauInstitution("ITAÚ UNIBANCO S.A.", "60701190"),
+                "0001",
+                "291900",
+                ErpItauCustomer(defaultRequest.clientId, "User test", defaultRequest.keyIdentifier)
             )
         )
 

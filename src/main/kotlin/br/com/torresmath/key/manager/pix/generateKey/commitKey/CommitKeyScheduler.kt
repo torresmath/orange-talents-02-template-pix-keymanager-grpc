@@ -33,14 +33,14 @@ open class CommitKeyScheduler(
                     it!!
                     LOGGER.info("Account retrieved: $it")
                     inactiveKey.commit(it, bcbClient, inactivePixKeyRepository)
-                }
+                }.onFailure { throw it }
             }
 
         }
     }
 }
 
-private fun AccountType.toErpItauValue(): String {
+fun AccountType.toErpItauValue(): String {
     return when (this) {
         AccountType.CHECKING_ACCOUNT -> "CONTA_CORRENTE"
         AccountType.SAVINGS_ACCOUNT -> "CONTA_POUPANCA"

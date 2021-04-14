@@ -3,10 +3,7 @@ package br.com.torresmath.key.manager.pix.generateKey
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
-import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
-import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyResponse
-import br.com.torresmath.key.manager.pix.generateKey.commitKey.InactivePixRepository
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.*
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.exceptions.ReadTimeoutException
@@ -19,8 +16,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
@@ -28,10 +23,10 @@ import javax.inject.Inject
 @MicronautTest
 internal class PixKeyTest(
     @field:Inject
-    val bcbMock: BcbClient,
-    @field:Inject
     val repository: InactivePixRepository
 ) {
+
+    @field:Inject lateinit var bcbMock: BcbClient
 
     @MockBean(BcbClient::class)
     fun bcbMock(): BcbClient {
@@ -91,8 +86,8 @@ internal class PixKeyTest(
         keyType = "CPF",
         key = pixKey.keyIdentifier,
         bankAccount = itauAccount.toBcbBankAccountRequest(),
-        owner = BcbCreatePixKeyRequest.BcbOwnerRequest(
-            type = BcbCreatePixKeyRequest.BcbOwnerRequest.BcbOwnerType.NATURAL_PERSON,
+        owner = BcbOwner(
+            type = BcbOwner.BcbOwnerType.NATURAL_PERSON,
             name = itauAccount.titular.nome,
             taxIdNumber = itauAccount.titular.cpf
         )
@@ -130,7 +125,7 @@ internal class PixKeyTest(
         Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
             .thenThrow(ReadTimeoutException.TIMEOUT_EXCEPTION)
 
-        val exc = assertThrows<ReadTimeoutException> { pixKey.commit(itauAccount, bcbMock, repository) }
+        assertThrows<ReadTimeoutException> { pixKey.commit(itauAccount, bcbMock, repository) }
         assertEquals(PixKeyStatus.INACTIVE, pixKey.status)
     }
 }

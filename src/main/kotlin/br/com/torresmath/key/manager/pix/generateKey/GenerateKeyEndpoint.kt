@@ -5,8 +5,10 @@ import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyResponse
 import br.com.torresmath.key.manager.exceptions.NotFoundCustomerException
 import br.com.torresmath.key.manager.exceptions.PixKeyAlreadyExistsException
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.toErpItauValue
 import br.com.torresmath.key.manager.shared.ErrorHandler
 import io.grpc.stub.StreamObserver
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,15 +31,16 @@ class GenerateKeyEndpoint(
 
         requestValidator.validate(pixKey)
 
-        // @todo refactor to retrieveCustomerAccount endpoint
         itauClient.runCatching {
-            retrieveCustomer(request.clientId).let {
+            retrieveCustomerAccount(request.clientId, request.accountType.toErpItauValue()).also {
                 logger.info("Retrieved Customer: $it")
             }
-        }
-            .onFailure {
-                throw NotFoundCustomerException("Couldn't find customer with given identifier: ${request.clientId}")
+        }.onFailure {
+            when (it) {
+                is HttpClientResponseException -> throw NotFoundCustomerException("Couldn't find customer with given identifier: ${request.clientId}")
+                else -> throw it
             }
+        }
 
         val keyIsNotUnique = pixKeyRepository.existsByKeyIdentifier(pixKey.keyIdentifier)
 
