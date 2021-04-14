@@ -3,14 +3,18 @@ package br.com.torresmath.key.manager.pix.generateKey
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
+import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.*
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpResponseFactory
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.exceptions.ReadTimeoutException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -23,10 +27,13 @@ import javax.inject.Inject
 @MicronautTest
 internal class PixKeyTest(
     @field:Inject
-    val repository: InactivePixRepository
+    val repositoryImpl: PixRepositoryImpl,
+    @field:Inject
+    val pixRepository: PixKeyRepository
 ) {
 
-    @field:Inject lateinit var bcbMock: BcbClient
+    @field:Inject
+    lateinit var bcbMock: BcbClient
 
     @MockBean(BcbClient::class)
     fun bcbMock(): BcbClient {
@@ -93,6 +100,16 @@ internal class PixKeyTest(
         )
     )
 
+    @BeforeEach
+    internal fun setUp() {
+        pixRepository.save(pixKey)
+    }
+
+    @AfterEach
+    internal fun tearDown() {
+        pixRepository.deleteAll()
+    }
+
     @Test
     fun `should set key status as ACTIVE`() {
 
@@ -107,7 +124,7 @@ internal class PixKeyTest(
                 )
             )
 
-        pixKey.commit(itauAccount, bcbMock, repository)
+        pixKey.commit(itauAccount, bcbMock, repositoryImpl)
         assertEquals(PixKeyStatus.ACTIVE, pixKey.status)
     }
 
@@ -116,7 +133,7 @@ internal class PixKeyTest(
         Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
             .thenThrow(HttpClientResponseException("UNPROCESSABLE_ENTITY", HttpResponse.unprocessableEntity<Any>()))
 
-        pixKey.commit(itauAccount, bcbMock, repository)
+        pixKey.commit(itauAccount, bcbMock, repositoryImpl)
         assertEquals(PixKeyStatus.FAILED, pixKey.status)
     }
 
@@ -125,7 +142,65 @@ internal class PixKeyTest(
         Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
             .thenThrow(ReadTimeoutException.TIMEOUT_EXCEPTION)
 
-        assertThrows<ReadTimeoutException> { pixKey.commit(itauAccount, bcbMock, repository) }
+        assertThrows<ReadTimeoutException> { pixKey.commit(itauAccount, bcbMock, repositoryImpl) }
         assertEquals(PixKeyStatus.INACTIVE, pixKey.status)
+    }
+
+    @Test
+    fun `should mark to delete`() {
+
+        pixKey.markAsToDelete(pixRepository)
+        assertEquals(PixKeyStatus.DELETE, pixKey.status)
+    }
+
+    @Test
+    fun `should commit delete`() {
+
+        val req = BcbDeletePixKeyRequest(pixKey.keyIdentifier, "60701190")
+
+        Mockito.`when`(bcbMock.deletePixKey(pixKey.keyIdentifier, req))
+            .thenReturn(HttpResponse.ok())
+
+        pixKey.commitDeletion(req, bcbMock, repositoryImpl)
+        assertNull(pixRepository.findByKeyIdentifier(pixKey.keyIdentifier))
+    }
+
+    @Test
+    fun `should commit delete when client return 404`() {
+        val req = BcbDeletePixKeyRequest(pixKey.keyIdentifier, "60701190")
+
+        Mockito.`when`(bcbMock.deletePixKey(pixKey.keyIdentifier, req))
+            .thenReturn(HttpResponse.notFound())
+
+        assertDoesNotThrow { pixKey.commitDeletion(req, bcbMock, repositoryImpl) }
+        assertNull(pixRepository.findByKeyIdentifier(pixKey.keyIdentifier))
+    }
+
+    @Test
+    fun `should commit delete when client return 403`() {
+
+        val req = BcbDeletePixKeyRequest(pixKey.keyIdentifier, "60701190")
+
+        Mockito.`when`(bcbMock.deletePixKey(pixKey.keyIdentifier, req))
+            .thenThrow(
+                HttpClientResponseException(
+                    "Forbidden",
+                    HttpResponseFactory.INSTANCE.status<Any>(HttpStatus.FORBIDDEN)
+                )
+            )
+
+        assertDoesNotThrow { pixKey.commitDeletion(req, bcbMock, repositoryImpl) }
+        assertNull(pixRepository.findByKeyIdentifier(pixKey.keyIdentifier))
+    }
+
+    @Test
+    fun `should not update when exception thrown`() {
+        val req = BcbDeletePixKeyRequest(pixKey.keyIdentifier, "60701190")
+
+        Mockito.`when`(bcbMock.deletePixKey(pixKey.keyIdentifier, req))
+            .thenThrow(ReadTimeoutException.TIMEOUT_EXCEPTION)
+
+        assertThrows<ReadTimeoutException> { pixKey.commitDeletion(req, bcbMock, repositoryImpl) }
+        assertNotNull(pixRepository.findByKeyIdentifier(pixKey.keyIdentifier))
     }
 }

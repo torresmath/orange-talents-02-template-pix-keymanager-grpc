@@ -4,10 +4,11 @@ import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifier
+import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbDeletePixKeyRequest
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbOwner
-import br.com.torresmath.key.manager.pix.generateKey.commitKey.InactivePixRepository
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.validation.Validated
@@ -54,10 +55,40 @@ class PixKey(
     @Enumerated(EnumType.STRING)
     var status: PixKeyStatus = PixKeyStatus.INACTIVE
 
+    fun markAsToDelete(repository: PixKeyRepository) {
+        this.status = PixKeyStatus.DELETE
+        repository.update(this)
+    }
+
+    fun commitDeletion(
+        bcbDeleteRequest: BcbDeletePixKeyRequest,
+        bcbClient: BcbClient,
+        pixRepositoryImpl: PixRepositoryImpl
+    ) {
+        kotlin.runCatching { bcbClient.deletePixKey(this.keyIdentifier, bcbDeleteRequest) }
+            .onSuccess {
+                if (it.status.code == 404)
+                    println("WARNING - Key $pixUuid Apparently doesn't exists at BCB. Deleting local reference anyway")
+
+                pixRepositoryImpl.delete(this)
+            }
+            .onFailure {
+                when (it) {
+                    is HttpClientResponseException -> {
+                        if (it.status.code == 403) {
+                            println("WARNING - Key $pixUuid already linked to another participant at BCB. Deleting local reference anyway")
+                            pixRepositoryImpl.delete(this)
+                        }
+                    }
+                    else -> throw it
+                }
+            }
+    }
+
     fun commit(
         itauAccount: ErpItauAccount,
         bcbClient: BcbClient,
-        repository: InactivePixRepository
+        repositoryImpl: PixRepositoryImpl
     ) {
 
         val request: BcbCreatePixKeyRequest = buildBcbCreatePixRequest(itauAccount)
@@ -66,12 +97,12 @@ class PixKey(
             bcbClient.generatePixKey(request)
         }.onSuccess {
             this.status = PixKeyStatus.ACTIVE
-            repository.update(this)
+            repositoryImpl.update(this)
         }.onFailure {
             when (it) {
                 is HttpClientResponseException -> {
                     this.status = PixKeyStatus.FAILED
-                    repository.update(this)
+                    repositoryImpl.update(this)
                 }
                 else -> throw it
             }

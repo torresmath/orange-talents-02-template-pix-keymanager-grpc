@@ -2,6 +2,7 @@ package br.com.torresmath.key.manager.pix.generateKey.commitKey
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyType
+import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.*
 import io.micronaut.http.client.exceptions.ReadTimeoutException
 import io.micronaut.test.annotation.MockBean
@@ -20,7 +21,7 @@ import javax.inject.Inject
 @MicronautTest
 internal class CommitKeySchedulerTest(
     @field:Inject val scheduler: CommitKeyScheduler,
-    @field:Inject val repository: InactivePixRepository,
+    @field:Inject val repositoryImpl: PixRepositoryImpl,
     @field:Inject val testsRepository: PixKeyRepository
 ) {
 

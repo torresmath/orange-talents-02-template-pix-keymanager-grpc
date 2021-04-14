@@ -1,6 +1,7 @@
 package br.com.torresmath.key.manager.pix.generateKey.commitKey
 
 import br.com.torresmath.key.manager.AccountType
+import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.ErpItauClient
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.LoggerFactory
@@ -11,18 +12,18 @@ import javax.inject.Singleton
 open class CommitKeyScheduler(
     @field:Inject val erpItauClient: ErpItauClient,
     @field:Inject val bcbClient: BcbClient,
-    @field:Inject val inactivePixKeyRepository: InactivePixRepository
+    @field:Inject val pixKeyRepositoryImpl: PixRepositoryImpl
 ) {
 
     val LOGGER = LoggerFactory.getLogger(this.javaClass)
 
-    @Scheduled(fixedDelay = "20s")
+    @Scheduled(fixedDelay = "10s")
     open fun commitKeys() {
 
-        val inactiveKeys = inactivePixKeyRepository.findInactiveKeys()
+        val inactiveKeys = pixKeyRepositoryImpl.findInactiveKeys()
 
         inactiveKeys.forEach { inactiveKey ->
-            LOGGER.info("Retrieved value ${inactiveKey}")
+            LOGGER.info("Try commit key: ${inactiveKey}")
             run {
                 kotlin.runCatching {
                     erpItauClient.retrieveCustomerAccount(
@@ -32,7 +33,7 @@ open class CommitKeyScheduler(
                 }.onSuccess {
                     it!!
                     LOGGER.info("Account retrieved: $it")
-                    inactiveKey.commit(it, bcbClient, inactivePixKeyRepository)
+                    inactiveKey.commit(it, bcbClient, pixKeyRepositoryImpl)
                 }.onFailure { throw it }
             }
 

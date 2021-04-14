@@ -5,6 +5,7 @@ import br.com.torresmath.key.manager.KeyStatus
 enum class PixKeyStatus {
     INACTIVE,
     ACTIVE,
+    DELETE,
     FAILED;
 
     fun toProtoKeyStatus(): KeyStatus {

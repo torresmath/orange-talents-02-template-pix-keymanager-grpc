@@ -37,9 +37,9 @@ class DeleteKeyEndpoint(
                 responseObserver?.onError(io.grpc.protobuf.StatusProto.toStatusRuntimeException(statusProto))
             }
             1 -> {
-                pixKeyRepository.delete(pixKey[0])
+                pixKey[0].markAsToDelete(pixKeyRepository)
 
-                LOGGER.info("Successfully deleted pix key for client id ${request.clientId} and pix id ${request.pixId}")
+                LOGGER.info("Successfully marked key to deletion for client id ${request.clientId} and pix id ${request.pixId}")
                 responseObserver?.onNext(Empty.newBuilder().build())
                 responseObserver?.onCompleted()
             }

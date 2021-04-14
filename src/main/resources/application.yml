@@ -18,6 +18,8 @@ micronaut:
           enabled: true
           max-connections: 50
 
+api.participant: 60701190
+
 datasources:
   default:
     url: ${DB_URL:`jdbc:mysql://localhost:3306/pix_key_manager`}

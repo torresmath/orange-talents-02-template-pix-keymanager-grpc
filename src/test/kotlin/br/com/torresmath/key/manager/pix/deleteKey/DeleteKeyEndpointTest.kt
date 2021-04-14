@@ -76,7 +76,7 @@ internal class DeleteKeyEndpointTest(
     }
 
     @Test
-    fun `should delete successfully and return EMPTY`() {
+    fun `should successfully mark to delete and return EMPTY`() {
 
         val request = DeleteKeyRequest.newBuilder()
             .setClientId(defaultPixKey.clientId)

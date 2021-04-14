@@ -1,4 +1,4 @@
-package br.com.torresmath.key.manager.pix.generateKey.commitKey
+package br.com.torresmath.key.manager.pix
 
 import br.com.torresmath.key.manager.pix.generateKey.PixKey
 import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
@@ -10,7 +10,7 @@ import javax.persistence.EntityManager
 import javax.persistence.LockModeType
 
 @Repository
-open class InactivePixRepository(
+open class PixRepositoryImpl(
     val em: EntityManager,
     private val transactional: SynchronousTransactionManager<Connection>
 ) {
@@ -29,9 +29,28 @@ open class InactivePixRepository(
         }
     }
 
+    fun findKeysMarkedToDelete(): List<PixKey> {
+        return transactional.executeRead {
+            em.createQuery("select p from PixKey p where p.status = :status", PixKey::class.java)
+                .setMaxResults(5)
+                .setParameter("status", PixKeyStatus.DELETE)
+                .setHint(
+                    "javax.persistence.lock.timeout",
+                    LockOptions.SKIP_LOCKED
+                )
+                .resultList
+        }
+    }
+
     fun update(pixKey: PixKey): PixKey? {
         return transactional.executeWrite {
             em.merge(pixKey)
+        }
+    }
+
+    fun delete(pixKey: PixKey) {
+        return transactional.executeWrite {
+            em.remove(pixKey)
         }
     }
 
