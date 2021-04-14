@@ -1,15 +1,42 @@
 package br.com.torresmath.key.manager.pix.generateKey
 
+import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyResponse
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.InactivePixRepository
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.client.exceptions.HttpClientResponseException
+import io.micronaut.http.client.exceptions.ReadTimeoutException
+import io.micronaut.test.annotation.MockBean
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import java.time.LocalDateTime
 import java.util.*
+import javax.inject.Inject
 
-internal class PixKeyTest {
+@MicronautTest
+internal class PixKeyTest(
+    @field:Inject
+    val bcbMock: BcbClient,
+    @field:Inject
+    val repository: InactivePixRepository
+) {
+
+    @MockBean(BcbClient::class)
+    fun bcbMock(): BcbClient {
+        return Mockito.mock(BcbClient::class.java)
+    }
 
     @Test
     fun `should format CPF`() {
@@ -42,5 +69,68 @@ internal class PixKeyTest {
             .build()
 
         assertNotEquals(keyRequest.toPixKey(), identifier)
+    }
+
+    var defaultRequest: KeyRequest = KeyRequest.newBuilder()
+        .setKeyType(KeyType.CPF)
+        .setClientId("c56dfef4-7901-44fb-84e2-a2cefb157890")
+        .setKeyIdentifier("42549789873")
+        .setAccountType(AccountType.CHECKING_ACCOUNT)
+        .build()
+
+    var pixKey: PixKey = defaultRequest.toPixKey()
+    var itauAccount: ErpItauAccount = ErpItauAccount(
+        "CONTA_CORRENTE",
+        ErpItauInstitution("ITAÚ UNIBANCO S.A.", "60701190"),
+        "0001",
+        "291900",
+        ErpItauCustomer(pixKey.clientId, "User test", pixKey.keyIdentifier)
+    )
+
+    var bcbRequest = BcbCreatePixKeyRequest(
+        keyType = "CPF",
+        key = pixKey.keyIdentifier,
+        bankAccount = itauAccount.toBcbBankAccountRequest(),
+        owner = BcbCreatePixKeyRequest.BcbOwnerRequest(
+            type = BcbCreatePixKeyRequest.BcbOwnerRequest.BcbOwnerType.NATURAL_PERSON,
+            name = itauAccount.titular.nome,
+            taxIdNumber = itauAccount.titular.cpf
+        )
+    )
+
+    @Test
+    fun `should set key status as ACTIVE`() {
+
+        Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
+            .thenReturn(
+                BcbCreatePixKeyResponse(
+                    bcbRequest.keyType,
+                    bcbRequest.key,
+                    bcbRequest.bankAccount,
+                    bcbRequest.owner,
+                    LocalDateTime.now().toString()
+                )
+            )
+
+        pixKey.commit(itauAccount, bcbMock, repository)
+        assertEquals(PixKeyStatus.ACTIVE, pixKey.status)
+    }
+
+    @Test
+    fun `should set key status as FAILED`() {
+        Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
+            .thenThrow(HttpClientResponseException("UNPROCESSABLE_ENTITY", HttpResponse.unprocessableEntity<Any>()))
+
+        pixKey.commit(itauAccount, bcbMock, repository)
+        assertEquals(PixKeyStatus.FAILED, pixKey.status)
+    }
+
+    @Test
+    fun `should throw exception when service is down`() {
+        Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
+            .thenThrow(ReadTimeoutException.TIMEOUT_EXCEPTION)
+
+        val exc = assertThrows<ReadTimeoutException> { pixKey.commit(itauAccount, bcbMock, repository) }
+        assertEquals(PixKeyStatus.INACTIVE, pixKey.status)
     }
 }

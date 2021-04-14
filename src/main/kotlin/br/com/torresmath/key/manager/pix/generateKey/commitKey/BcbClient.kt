@@ -4,7 +4,10 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.client.annotation.Client
+import io.micronaut.http.client.exceptions.HttpClientResponseException
+import io.micronaut.retry.annotation.CircuitBreaker
 
+@CircuitBreaker(delay = "5s", attempts = "3", reset = "20s", excludes = [HttpClientResponseException::class])
 @Client("bcb")
 interface BcbClient {
 

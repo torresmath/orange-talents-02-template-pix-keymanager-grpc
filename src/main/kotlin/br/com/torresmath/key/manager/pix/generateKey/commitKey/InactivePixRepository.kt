@@ -4,6 +4,7 @@ import br.com.torresmath.key.manager.pix.generateKey.PixKey
 import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
 import io.micronaut.data.annotation.Repository
 import io.micronaut.transaction.SynchronousTransactionManager
+import io.micronaut.transaction.TransactionDefinition
 import org.hibernate.LockOptions
 import java.sql.Connection
 import javax.persistence.EntityManager
@@ -16,7 +17,6 @@ open class InactivePixRepository(
     private val transactional: SynchronousTransactionManager<Connection>
 ) {
 
-    @Transactional
     fun findInactiveKeys(): List<PixKey> {
         return transactional.executeRead {
             em.createQuery("select p from PixKey p where p.status = :status", PixKey::class.java)
@@ -31,7 +31,6 @@ open class InactivePixRepository(
         }
     }
 
-    @Transactional
     fun update(pixKey: PixKey): PixKey? {
         return transactional.executeWrite {
             em.merge(pixKey)

@@ -16,7 +16,7 @@ open class CommitKeyScheduler(
 
     val LOGGER = LoggerFactory.getLogger(this.javaClass)
 
-    @Scheduled(fixedDelay = "10s")
+    @Scheduled(fixedDelay = "20s")
     open fun commitKeys() {
 
         val inactiveKeys = inactivePixKeyRepository.findInactiveKeys()
@@ -29,16 +29,11 @@ open class CommitKeyScheduler(
                         inactiveKey.clientId,
                         inactiveKey.accountType.toErpItauValue()
                     )
-                }.fold(
-                    {
-                        it!!
-                        LOGGER.info("Account retrieved: $it")
-                        inactiveKey.submitKey(it, bcbClient, inactivePixKeyRepository)
-                    },
-                    {
-                        LOGGER.error("ERROR - ${it.cause}")
-                    }
-                )
+                }.onSuccess {
+                    it!!
+                    LOGGER.info("Account retrieved: $it")
+                    inactiveKey.commit(it, bcbClient, inactivePixKeyRepository)
+                }
             }
 
         }

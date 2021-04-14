@@ -4,13 +4,15 @@ import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifier
-import br.com.torresmath.key.manager.pix.generateKey.commitKey.*
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
+import br.com.torresmath.key.manager.pix.generateKey.commitKey.InactivePixRepository
 import io.micronaut.core.annotation.Introspected
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.validation.Validated
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
-import javax.transaction.Transactional
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -51,27 +53,41 @@ class PixKey(
     @Enumerated(EnumType.STRING)
     var status: PixKeyStatus = PixKeyStatus.INACTIVE
 
-    @Transactional
-    fun submitKey(
+    fun commit(
         itauAccount: ErpItauAccount,
         bcbClient: BcbClient,
         repository: InactivePixRepository
     ) {
-        val request = BcbCreatePixKeyRequest(
-            this.keyType.toBcbKeyType(),
-            this.keyIdentifier,
-            itauAccount.toBcbBankAccountRequest(),
-            BcbCreatePixKeyRequest.BcbOwnerRequest(
-                BcbCreatePixKeyRequest.BcbOwnerRequest.BcbOwnerType.NATURAL_PERSON,
-                itauAccount.titular.nome,
-                itauAccount.titular.cpf
-            )
-        )
 
-        bcbClient.generatePixKey(request).let {
+        val request: BcbCreatePixKeyRequest = getBcbCreatePixRequest(itauAccount)
+
+        kotlin.runCatching {
+            bcbClient.generatePixKey(request)
+        }.onSuccess {
             this.status = PixKeyStatus.ACTIVE
             repository.update(this)
+        }.onFailure {
+            when (it) {
+                is HttpClientResponseException -> {
+                    this.status = PixKeyStatus.FAILED
+                    repository.update(this)
+                }
+                else -> throw it
+            }
         }
+    }
+
+    protected fun getBcbCreatePixRequest(itauAccount: ErpItauAccount): BcbCreatePixKeyRequest {
+        return BcbCreatePixKeyRequest(
+            keyType = this.keyType.toBcbKeyType(),
+            key = this.keyIdentifier,
+            bankAccount = itauAccount.toBcbBankAccountRequest(),
+            owner = BcbCreatePixKeyRequest.BcbOwnerRequest(
+                type = BcbCreatePixKeyRequest.BcbOwnerRequest.BcbOwnerType.NATURAL_PERSON,
+                name = itauAccount.titular.nome,
+                taxIdNumber = itauAccount.titular.cpf
+            )
+        )
     }
 
     override fun toString(): String {
