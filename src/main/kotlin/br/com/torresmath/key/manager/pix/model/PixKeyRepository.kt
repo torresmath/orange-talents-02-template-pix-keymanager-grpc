@@ -1,4 +1,4 @@
-package br.com.torresmath.key.manager.pix.generateKey
+package br.com.torresmath.key.manager.pix.model
 
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.jpa.repository.JpaRepository

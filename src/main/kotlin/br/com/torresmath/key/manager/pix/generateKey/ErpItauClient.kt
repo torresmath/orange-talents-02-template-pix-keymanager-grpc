@@ -1,6 +1,8 @@
 package br.com.torresmath.key.manager.pix.generateKey
 
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbBankAccount
+import br.com.torresmath.key.manager.pix.model.Account
+import br.com.torresmath.key.manager.pix.model.AccountOwner
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.QueryValue
@@ -16,18 +18,29 @@ interface ErpItauClient {
     fun retrieveCustomerAccount(@PathVariable identifier: String, @QueryValue("tipo") type: String): ErpItauAccount?
 }
 
-data class ErpItauCustomer(
-    val id: String,
-    val nome: String,
-    val cpf: String
-)
-
 data class ErpItauAccount(
     val tipo: String,
     val instituicao: ErpItauInstitution,
     val agencia: String,
     val numero: String,
     val titular: ErpItauCustomer
+) {
+    fun toAccount(): Account {
+        return Account(
+            branch = agencia,
+            number = numero,
+            owner = AccountOwner(
+                name = titular.nome,
+                cpf = titular.cpf
+            )
+        )
+    }
+}
+
+data class ErpItauCustomer(
+    val id: String,
+    val nome: String,
+    val cpf: String
 )
 
 data class ErpItauInstitution(

@@ -5,6 +5,9 @@ import br.com.torresmath.key.manager.GenerateKeyGrpcServiceGrpc
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.toErpItauValue
+import br.com.torresmath.key.manager.pix.model.PixKey
+import br.com.torresmath.key.manager.pix.model.PixKeyRepository
+import br.com.torresmath.key.manager.pix.model.toPixKey
 import com.google.rpc.BadRequest
 import io.grpc.ManagedChannel
 import io.grpc.Status
@@ -75,7 +78,7 @@ internal class GenerateKeyEndpointTest(
     fun `should return NOT_FOUND`() {
         val request = KeyRequest.newBuilder()
             .setKeyType(KeyType.RANDOM)
-            .setClientId("invalid")
+            .setClientId("c56dfef4-7901-44fb-84e2-a2cefb157890")
             .setAccountType(AccountType.CHECKING_ACCOUNT)
             .build()
 
@@ -160,7 +163,7 @@ internal class GenerateKeyEndpointTest(
 
         val request = KeyRequest.newBuilder()
             .setKeyType(keyType)
-            .setClientId("232ddbc6-9b9d-11eb-a8b3")
+            .setClientId("c56dfef4-7901-44fb-84e2-a2cefb157890")
             .setKeyIdentifier(identifier)
             .setAccountType(AccountType.CHECKING_ACCOUNT)
             .build()

@@ -1,4 +1,4 @@
-package br.com.torresmath.key.manager.pix.generateKey
+package br.com.torresmath.key.manager.pix.model
 
 import br.com.torresmath.key.manager.KeyStatus
 

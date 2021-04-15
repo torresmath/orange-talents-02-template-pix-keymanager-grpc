@@ -2,6 +2,7 @@ package br.com.torresmath.key.manager.pix.generateKey
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyType
+import br.com.torresmath.key.manager.pix.model.PixKey
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import io.micronaut.validation.validator.Validator
 import org.junit.jupiter.api.Test

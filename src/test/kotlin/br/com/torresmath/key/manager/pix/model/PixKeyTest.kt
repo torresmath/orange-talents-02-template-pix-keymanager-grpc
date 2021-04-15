@@ -1,10 +1,13 @@
-package br.com.torresmath.key.manager.pix.generateKey
+package br.com.torresmath.key.manager.pix.model
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.pix.PixRepositoryImpl
+import br.com.torresmath.key.manager.pix.generateKey.ErpItauAccount
+import br.com.torresmath.key.manager.pix.generateKey.ErpItauCustomer
+import br.com.torresmath.key.manager.pix.generateKey.ErpItauInstitution
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.*
+import br.com.torresmath.key.manager.pix.generateKey.toBcbBankAccountRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpResponseFactory
 import io.micronaut.http.HttpStatus

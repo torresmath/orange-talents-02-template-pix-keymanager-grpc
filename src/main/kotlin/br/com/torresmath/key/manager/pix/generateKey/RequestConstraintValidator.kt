@@ -1,5 +1,6 @@
 package br.com.torresmath.key.manager.pix.generateKey
 
+import br.com.torresmath.key.manager.pix.model.PixKey
 import io.micronaut.validation.validator.Validator
 import org.slf4j.LoggerFactory
 import javax.inject.Inject

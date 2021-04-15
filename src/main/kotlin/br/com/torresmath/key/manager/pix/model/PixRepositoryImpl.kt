@@ -1,7 +1,5 @@
-package br.com.torresmath.key.manager.pix
+package br.com.torresmath.key.manager.pix.model
 
-import br.com.torresmath.key.manager.pix.generateKey.PixKey
-import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
 import io.micronaut.data.annotation.Repository
 import io.micronaut.transaction.SynchronousTransactionManager
 import org.hibernate.LockOptions

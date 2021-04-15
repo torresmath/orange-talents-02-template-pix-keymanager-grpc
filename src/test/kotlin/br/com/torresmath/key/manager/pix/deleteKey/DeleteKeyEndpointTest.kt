@@ -4,8 +4,8 @@ import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.DeleteKeyGrpcServiceGrpc
 import br.com.torresmath.key.manager.DeleteKeyRequest
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.pix.generateKey.PixKey
-import br.com.torresmath.key.manager.pix.generateKey.PixKeyRepository
+import br.com.torresmath.key.manager.pix.model.PixKey
+import br.com.torresmath.key.manager.pix.model.PixKeyRepository
 import com.google.protobuf.Empty
 import io.grpc.ManagedChannel
 import io.grpc.Status

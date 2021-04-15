@@ -3,6 +3,8 @@ package br.com.torresmath.key.manager.pix.generateKey
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifierValidator
+import br.com.torresmath.key.manager.pix.model.PixKey
+import br.com.torresmath.key.manager.pix.model.PixKeyStatus
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -117,6 +119,6 @@ internal class ValidKeyIdentifierValidatorTest(@Inject val validator: ValidKeyId
             accountType = AccountType.CHECKING_ACCOUNT
         )
 
-        assertEquals(false, validator.isValid(null, Mockito.mock(ConstraintValidatorContext::class.java)))
+        assertEquals(false, validator.isValid(pix, Mockito.mock(ConstraintValidatorContext::class.java)))
     }
 }

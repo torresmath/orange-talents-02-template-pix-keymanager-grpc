@@ -1,8 +1,8 @@
 package br.com.torresmath.key.manager.pix.deleteKey
 
-import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbDeletePixKeyRequest
+import br.com.torresmath.key.manager.pix.model.PixRepositoryImpl
 import io.micronaut.context.annotation.Value
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.LoggerFactory

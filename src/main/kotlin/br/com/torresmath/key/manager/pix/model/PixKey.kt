@@ -1,14 +1,16 @@
-package br.com.torresmath.key.manager.pix.generateKey
+package br.com.torresmath.key.manager.pix.model
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
 import br.com.torresmath.key.manager.annotations.ValidKeyIdentifier
-import br.com.torresmath.key.manager.pix.PixRepositoryImpl
+import br.com.torresmath.key.manager.annotations.ValidUUID
+import br.com.torresmath.key.manager.pix.generateKey.ErpItauAccount
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbCreatePixKeyRequest
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbDeletePixKeyRequest
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbOwner
+import br.com.torresmath.key.manager.pix.generateKey.toBcbBankAccountRequest
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.validation.Validated
@@ -26,6 +28,7 @@ import javax.validation.constraints.Size
 class PixKey(
     @field:NotNull(message = "Customer/Client ID cannot be null")
     @field:NotBlank(message = "Customer/Client ID cannot be blank")
+    @field:ValidUUID
     val clientId: String,
 
     @Enumerated(EnumType.STRING)
@@ -54,6 +57,9 @@ class PixKey(
     @NotNull
     @Enumerated(EnumType.STRING)
     var status: PixKeyStatus = PixKeyStatus.INACTIVE
+
+    @Embedded
+    var account: Account? = null
 
     fun markAsToDelete(repository: PixKeyRepository) {
         this.status = PixKeyStatus.DELETE

@@ -2,8 +2,10 @@ package br.com.torresmath.key.manager.pix.generateKey.commitKey
 
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.*
+import br.com.torresmath.key.manager.pix.model.PixKey
+import br.com.torresmath.key.manager.pix.model.PixKeyRepository
+import br.com.torresmath.key.manager.pix.model.PixRepositoryImpl
 import io.micronaut.http.client.exceptions.ReadTimeoutException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest

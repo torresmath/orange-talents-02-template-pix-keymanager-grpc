@@ -1,8 +1,8 @@
 package br.com.torresmath.key.manager.annotations
 
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.pix.generateKey.PixKey
-import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
+import br.com.torresmath.key.manager.pix.model.PixKey
+import br.com.torresmath.key.manager.pix.model.PixKeyStatus
 import io.micronaut.validation.validator.Validator
 import org.hibernate.validator.constraints.br.CPF
 import java.util.*

@@ -1,8 +1,8 @@
 package br.com.torresmath.key.manager.pix.generateKey.commitKey
 
 import br.com.torresmath.key.manager.AccountType
-import br.com.torresmath.key.manager.pix.PixRepositoryImpl
 import br.com.torresmath.key.manager.pix.generateKey.ErpItauClient
+import br.com.torresmath.key.manager.pix.model.PixRepositoryImpl
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.LoggerFactory
 import javax.inject.Inject

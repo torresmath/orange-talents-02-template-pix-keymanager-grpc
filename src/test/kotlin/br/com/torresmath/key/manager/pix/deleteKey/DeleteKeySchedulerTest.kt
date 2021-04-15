@@ -3,12 +3,12 @@ package br.com.torresmath.key.manager.pix.deleteKey
 import br.com.torresmath.key.manager.AccountType
 import br.com.torresmath.key.manager.KeyRequest
 import br.com.torresmath.key.manager.KeyType
-import br.com.torresmath.key.manager.pix.generateKey.PixKey
-import br.com.torresmath.key.manager.pix.generateKey.PixKeyRepository
-import br.com.torresmath.key.manager.pix.generateKey.PixKeyStatus
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbDeletePixKeyRequest
-import br.com.torresmath.key.manager.pix.generateKey.toPixKey
+import br.com.torresmath.key.manager.pix.model.PixKey
+import br.com.torresmath.key.manager.pix.model.PixKeyRepository
+import br.com.torresmath.key.manager.pix.model.PixKeyStatus
+import br.com.torresmath.key.manager.pix.model.toPixKey
 import io.micronaut.http.HttpResponse
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
