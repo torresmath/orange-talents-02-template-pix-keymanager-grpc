@@ -12,6 +12,11 @@ import "generateKey.proto";
 
 service RetrieveKeyGrpcService {
   rpc retrieveKey(RetrieveKeyRequest) returns (KeyDetailResponse) {}
+  rpc retrieveKeyByIdentifier(RetrieveKeyByIdentifierRequest) returns (KeyDetailResponse) {}
+}
+
+message RetrieveKeyByIdentifierRequest {
+  string key = 1;
 }
 
 message RetrieveKeyRequest {

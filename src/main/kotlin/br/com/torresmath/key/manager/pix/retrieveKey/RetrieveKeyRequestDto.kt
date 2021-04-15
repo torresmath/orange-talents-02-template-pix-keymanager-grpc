@@ -7,11 +7,11 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 class RetrieveKeyRequestDto(
-    @NotNull
-    @NotBlank
-    @ValidUUID val clientId: String,
-    @NotBlank
-    @ValidUUID val pixId: String
+    @field:NotNull
+    @field:NotBlank
+    @field:ValidUUID val clientId: String,
+    @field:NotBlank
+    @field:ValidUUID val pixId: String
 ) : RequestDto
 
 fun RetrieveKeyRequest.toRequestDto(): RetrieveKeyRequestDto = RetrieveKeyRequestDto(this.clientId, this.pixId)

@@ -118,7 +118,7 @@ internal class PixKeyTest(
 
         Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
             .thenReturn(
-                BcbCreatePixKeyResponse(
+                BcbPixKeyResponse(
                     bcbRequest.keyType,
                     bcbRequest.key,
                     bcbRequest.bankAccount,

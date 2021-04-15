@@ -1,11 +1,9 @@
 package br.com.torresmath.key.manager.pix.generateKey.commitKey
 
+import br.com.torresmath.key.manager.AccountType
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Delete
-import io.micronaut.http.annotation.PathVariable
-import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.*
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.retry.annotation.CircuitBreaker
@@ -14,13 +12,17 @@ import io.micronaut.retry.annotation.CircuitBreaker
 @Client("bcb")
 interface BcbClient {
 
+    @Get(value = "/api/v1/pix/keys/{key}")
+    fun getPixKey(@PathVariable key: String) : HttpResponse<BcbPixKeyResponse>
+
     @Post(value = "/api/v1/pix/keys", processes = [MediaType.APPLICATION_XML])
-    fun generatePixKey(@Body request: BcbCreatePixKeyRequest): BcbCreatePixKeyResponse
+    fun generatePixKey(@Body request: BcbCreatePixKeyRequest): BcbPixKeyResponse
 
     @Delete(value = "/api/v1/pix/keys/{key}", processes = [MediaType.APPLICATION_XML])
     fun deletePixKey(@PathVariable key: String, @Body request: BcbDeletePixKeyRequest) : HttpResponse<Any>
 
 }
+
 
 data class BcbCreatePixKeyRequest(
     val keyType: String,
@@ -37,7 +39,14 @@ data class BcbBankAccount(
 ) {
     enum class BcbAccountType {
         CACC,
-        SVGS
+        SVGS;
+
+        fun toAccountType(): AccountType? {
+            return when(this) {
+                CACC -> AccountType.CHECKING_ACCOUNT
+                SVGS -> AccountType.SAVINGS_ACCOUNT
+            }
+        }
     }
 }
 
@@ -52,7 +61,7 @@ data class BcbOwner(
     }
 }
 
-data class BcbCreatePixKeyResponse(
+data class BcbPixKeyResponse(
     val keyType: String,
     val key: String,
     val bankAccount: BcbBankAccount,

@@ -81,7 +81,7 @@ internal class CommitKeySchedulerTest(
             .thenReturn(itauAccount)
 
         Mockito.`when`(bcbMock.generatePixKey(bcbRequest))
-            .thenReturn(BcbCreatePixKeyResponse(
+            .thenReturn(BcbPixKeyResponse(
                 bcbRequest.keyType,
                 bcbRequest.key,
                 bcbRequest.bankAccount,
