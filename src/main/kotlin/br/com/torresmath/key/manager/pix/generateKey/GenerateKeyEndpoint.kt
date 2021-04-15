@@ -43,6 +43,7 @@ class GenerateKeyEndpoint(
                 else -> throw it
             }
         }.onSuccess {
+            val account = it.toAccount()
 
             val keyIsNotUnique = pixKeyRepository.existsByKeyIdentifier(pixKey.keyIdentifier)
 
@@ -52,7 +53,7 @@ class GenerateKeyEndpoint(
                 )
             }
 
-            pixKeyRepository.save(pixKey)
+            pixKey.save(account, pixKeyRepository)
 
             logger.info("Successfully created Pix Key: ${pixKey.pixUuid}")
             val response = KeyResponse.newBuilder()

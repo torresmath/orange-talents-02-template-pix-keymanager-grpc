@@ -131,8 +131,15 @@ internal class GenerateKeyEndpointTest(
     @ParameterizedTest
     @MethodSource("validParams")
     fun `should save successfully`(keyType: KeyType, identifier: String) {
+        val request = KeyRequest.newBuilder()
+            .setKeyType(keyType)
+            .setClientId("232ddbc6-9b9d-11eb-a8b3-0242ac130003")
+            .setKeyIdentifier(identifier)
+            .setAccountType(AccountType.CHECKING_ACCOUNT)
+            .build()
+
         Mockito.`when`(
-            erpMock.retrieveCustomerAccount(defaultRequest.clientId, defaultRequest.accountType.toErpItauValue())
+            erpMock.retrieveCustomerAccount("232ddbc6-9b9d-11eb-a8b3-0242ac130003", request.accountType.toErpItauValue())
         ).thenReturn(
             ErpItauAccount(
                 "CONTA_CORRENTE",
@@ -142,13 +149,6 @@ internal class GenerateKeyEndpointTest(
                 ErpItauCustomer(defaultRequest.clientId, "User test", defaultRequest.keyIdentifier)
             )
         )
-
-        val request = KeyRequest.newBuilder()
-            .setKeyType(keyType)
-            .setClientId("232ddbc6-9b9d-11eb-a8b3-0242ac130003")
-            .setKeyIdentifier(identifier)
-            .setAccountType(AccountType.CHECKING_ACCOUNT)
-            .build()
 
         val response = blockingStub.generateKey(request)
 

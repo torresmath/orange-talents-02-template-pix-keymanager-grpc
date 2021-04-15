@@ -15,7 +15,7 @@ import io.micronaut.retry.annotation.CircuitBreaker
 interface ErpItauClient {
 
     @Get("/api/v1/clientes/{identifier}/contas")
-    fun retrieveCustomerAccount(@PathVariable identifier: String, @QueryValue("tipo") type: String): ErpItauAccount?
+    fun retrieveCustomerAccount(@PathVariable identifier: String, @QueryValue("tipo") type: String): ErpItauAccount
 }
 
 data class ErpItauAccount(

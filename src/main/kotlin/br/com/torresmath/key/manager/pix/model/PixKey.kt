@@ -132,6 +132,11 @@ class PixKey(
         return "PixKey(clientId='$clientId', keyType=$keyType, keyIdentifier='$keyIdentifier', accountType=$accountType)"
     }
 
+    fun save(account: Account, pixKeyRepository: PixKeyRepository) {
+        this.account = account
+        pixKeyRepository.save(this)
+    }
+
 }
 
 fun KeyRequest.toPixKey(): PixKey {
