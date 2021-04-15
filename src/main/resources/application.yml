@@ -18,6 +18,7 @@ micronaut:
           enabled: true
           max-connections: 50
 
+api.institution_name: 'ITAÚ UNIBANCO S.A.'
 api.participant: 60701190
 
 datasources:
