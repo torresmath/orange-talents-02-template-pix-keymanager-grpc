@@ -99,20 +99,19 @@ class PixKey(
 
         val request: BcbCreatePixKeyRequest = buildBcbCreatePixRequest(itauAccount)
 
-        kotlin.runCatching {
-            bcbClient.generatePixKey(request)
-        }.onSuccess {
-            this.status = PixKeyStatus.ACTIVE
-            repositoryImpl.update(this)
-        }.onFailure {
-            when (it) {
-                is HttpClientResponseException -> {
-                    this.status = PixKeyStatus.FAILED
-                    repositoryImpl.update(this)
+        kotlin.runCatching { bcbClient.generatePixKey(request) }
+            .onSuccess {
+                this.status = PixKeyStatus.ACTIVE
+                repositoryImpl.update(this)
+            }.onFailure {
+                when (it) {
+                    is HttpClientResponseException -> {
+                        this.status = PixKeyStatus.FAILED
+                        repositoryImpl.update(this)
+                    }
+                    else -> throw it
                 }
-                else -> throw it
             }
-        }
     }
 
     protected fun buildBcbCreatePixRequest(itauAccount: ErpItauAccount): BcbCreatePixKeyRequest {

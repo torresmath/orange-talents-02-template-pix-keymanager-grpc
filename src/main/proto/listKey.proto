@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.torresmath.key.manager";
+option java_outer_classname = "ListKeyGrpc";
+option objc_class_prefix = "HLW";
+
+package br.com.torresmath.key.manager;
+
+import "google/protobuf/timestamp.proto";
+import "generateKey.proto";
+
+service ListKeyGrpcService {
+  rpc listKeyByClientId(ListKeyRequest) returns (ListKeyResponse) {}
+}
+
+message ListKeyRequest {
+  string clientId = 1;
+}
+
+message ListKeyResponse {
+  string clientId = 1;
+  repeated PixKey keys = 2;
+
+  message PixKey {
+    KeyStatus status = 1;
+    string pixId = 2;
+    string key = 3;
+    KeyType keyType = 4;
+    AccountType accountType = 5;
+    google.protobuf.Timestamp createdAt = 6;
+  }
+}
