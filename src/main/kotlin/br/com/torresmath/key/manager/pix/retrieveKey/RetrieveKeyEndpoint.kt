@@ -47,7 +47,7 @@ class RetrieveKeyEndpoint(
             }
             1 -> {
                 val key = pixKey[0]
-                LOGGER.info("Successfully marked key to deletion for client id ${request.clientId} and pix id ${request.pixId}")
+                LOGGER.info("Successfully found key for client id ${request.clientId} and pix id ${request.pixId}")
                 responseObserver?.onNext(buildResponse(key))
                 responseObserver?.onCompleted()
             }
@@ -131,6 +131,8 @@ private fun buildResponse(bcbPixKey: BcbPixKeyResponse): KeyDetailResponse {
     return KeyDetailResponse.newBuilder()
         .clearClientId()
         .clearPixId()
+        .setKey(bcbPixKey.key)
+        .setKeyType(bcbPixKey.keyType)
         .setAccount(accountResponse)
         .setOwner(
             KeyOwnerResponse.newBuilder()
@@ -173,6 +175,8 @@ private fun buildResponse(pixKey: PixKey): KeyDetailResponse {
     return KeyDetailResponse.newBuilder()
         .setClientId(pixKey.clientId)
         .setPixId(pixKey.pixUuid)
+        .setKey(pixKey.keyIdentifier)
+        .setKeyType(pixKey.keyType.name)
         .setCreatedAt(createdAt)
         .setAccount(accountResponse)
         .setOwner(ownerResponse)
