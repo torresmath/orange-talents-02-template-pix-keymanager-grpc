@@ -5,6 +5,7 @@ import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbClient
 import br.com.torresmath.key.manager.pix.generateKey.commitKey.BcbPixKeyResponse
 import br.com.torresmath.key.manager.pix.model.PixKey
 import br.com.torresmath.key.manager.pix.model.PixKeyRepository
+import br.com.torresmath.key.manager.pix.model.PixRepositoryImpl
 import br.com.torresmath.key.manager.shared.ErrorHandler
 import br.com.torresmath.key.manager.shared.RequestValidator
 import com.google.protobuf.Timestamp
@@ -22,6 +23,7 @@ import javax.inject.Singleton
 class RetrieveKeyEndpoint(
     @Inject val validator: RequestValidator,
     @Inject val repository: PixKeyRepository,
+    @Inject val repositoryImpl: PixRepositoryImpl,
     @Inject val bcbClient: BcbClient
 ) : RetrieveKeyGrpcServiceGrpc.RetrieveKeyGrpcServiceImplBase() {
 
@@ -32,44 +34,11 @@ class RetrieveKeyEndpoint(
         request!!
         validator.validate(request.toRequestDto())
 
-        val pixKey = repository.findByClientIdAndPixUuid(request.clientId, request.pixId)
+        val key = repositoryImpl.findByClientIdAndPixUuid(request.clientId, request.pixId)
 
-        when (pixKey.size) {
-            0 -> {
-                LOGGER.error("Not found pix key for client id ${request.clientId} and pix id ${request.pixId}")
-
-                val statusProto = Status.newBuilder()
-                    .setCode(Code.NOT_FOUND_VALUE)
-                    .setMessage("Not found pix key for client id ${request.clientId} and pix id ${request.pixId}")
-                    .build()
-
-                responseObserver?.onError(io.grpc.protobuf.StatusProto.toStatusRuntimeException(statusProto))
-            }
-            1 -> {
-                val key = pixKey[0]
-                LOGGER.info("Successfully found key for client id ${request.clientId} and pix id ${request.pixId}")
-                responseObserver?.onNext(buildResponse(key))
-                responseObserver?.onCompleted()
-            }
-            else -> {
-                LOGGER.error(
-                    "UNEXPECTED ERROR - It appears that there are ${pixKey.size} keys " +
-                            "for client id ${request.clientId} and pix id ${request.pixId}"
-                )
-
-                val statusProto = Status.newBuilder()
-                    .setCode(Code.INTERNAL_VALUE)
-                    .setMessage("Unexpected error")
-                    .build()
-
-                responseObserver?.onError(io.grpc.protobuf.StatusProto.toStatusRuntimeException(statusProto))
-                throw IllegalStateException(
-                    "UNEXPECTED ERROR - It appears that there are ${pixKey.size} keys " +
-                            "for client id ${request.clientId} and pix id ${request.pixId}"
-                )
-            }
-        }
-
+        LOGGER.info("Successfully found key for client id ${request.clientId} and pix id ${request.pixId}")
+        responseObserver?.onNext(buildResponse(key))
+        responseObserver?.onCompleted()
     }
 
     override fun retrieveKeyByIdentifier(
