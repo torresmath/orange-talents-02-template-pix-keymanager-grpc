@@ -61,7 +61,7 @@ class PixKey(
     @Embedded
     var account: Account? = null
 
-    fun markAsToDelete(repository: PixKeyRepository) {
+    fun markAsToDelete(repository: PixRepositoryImpl) {
         this.status = PixKeyStatus.DELETE
         repository.update(this)
     }

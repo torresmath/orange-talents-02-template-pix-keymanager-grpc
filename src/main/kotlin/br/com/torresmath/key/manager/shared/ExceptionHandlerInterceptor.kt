@@ -2,6 +2,7 @@ package br.com.torresmath.key.manager.shared
 
 import br.com.torresmath.key.manager.ErrorDetail
 import br.com.torresmath.key.manager.exceptions.NotFoundCustomerException
+import br.com.torresmath.key.manager.exceptions.NotFoundPixKeyException
 import br.com.torresmath.key.manager.exceptions.PixKeyAlreadyExistsException
 import com.google.rpc.BadRequest
 import com.google.rpc.Code
@@ -13,6 +14,7 @@ import io.micronaut.aop.InterceptorBean
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import org.slf4j.LoggerFactory
+import java.lang.IllegalStateException
 import javax.inject.Singleton
 import javax.validation.ConstraintViolationException
 
@@ -32,6 +34,8 @@ class ExceptionHandlerInterceptor : MethodInterceptor<Any, Any?> {
                 is ConstraintViolationException -> handleConstraintValidationException(e)
                 is PixKeyAlreadyExistsException -> handlePixAlreadyExistsException(e)
                 is NotFoundCustomerException -> handleNotFoundCustomerException(e)
+                is NotFoundPixKeyException -> handleNotFoundPixKeyException(e)
+                is IllegalStateException -> Status.INTERNAL.withDescription(e.message).asRuntimeException()
 
                 else -> Status.UNKNOWN.withDescription("unexpected error happened").asRuntimeException()
             }
@@ -40,6 +44,10 @@ class ExceptionHandlerInterceptor : MethodInterceptor<Any, Any?> {
             responseObserver.onError(statusError)
             return null
         }
+    }
+
+    private fun handleNotFoundPixKeyException(e: NotFoundPixKeyException): StatusRuntimeException {
+        return buildCustomException(e.message, e.code, Code.NOT_FOUND)
     }
 
     private fun handleNotFoundCustomerException(e: NotFoundCustomerException): StatusRuntimeException {

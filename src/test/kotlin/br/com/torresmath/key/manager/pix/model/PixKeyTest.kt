@@ -152,7 +152,7 @@ internal class PixKeyTest(
     @Test
     fun `should mark to delete`() {
 
-        pixKey.markAsToDelete(pixRepository)
+        pixKey.markAsToDelete(repositoryImpl)
         assertEquals(PixKeyStatus.DELETE, pixKey.status)
     }
 
